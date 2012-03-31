@@ -1,0 +1,6 @@
+name: CaptureThePortal
+main: org.wargamer2010.capturetheportal.CaptureThePortal
+version: 1.9.1
+author: Wargamer2010
+description: "Capture the Portal by holding the wool square"             
+commands:
