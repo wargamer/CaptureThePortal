@@ -6,8 +6,9 @@ CaptureThePortal:
     cooldown_message_timeleft_increments: 0
     capture_message: '[team] [group] is attempting to capture the [type].'
     cooldown_message: The portal will be available for capture again within [cooldown].
-    enableEndersupport: false
+    enableEndersupport: false    
     enablewormholesupport: false
-    enablefactionsupport: false    
+    enablepermissions: false
+    enablefactionsupport: false
     enabletownysupport: false
     enablesimpleclanssupport: false

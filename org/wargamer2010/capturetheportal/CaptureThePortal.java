@@ -12,8 +12,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.Location;
 import org.bukkit.ChatColor;
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginDescriptionFile;
 import java.util.logging.Logger;
@@ -34,16 +32,17 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean enablewormholes = false;                                                    // Whether or not Wormholes should be supported together with regular nether portals
     private boolean enablefactions = false;                                                     // Enables factions and disables default way of creating teams (via Permissions)
     private boolean enable_ender = false;                                                       // Support for Ender portals, is disabled by default    
-    private boolean enabletowny = false;                                                        // Enables towny support and disables default way of creating teams (via Permissions)
-    private boolean enablesimpleclans = false;                                                  // Enables simpleclans support and disables default way of creating teams (via Permissions)
-    private boolean usepermissions = false;                                                     // Whether or not to use the Permissions plugin
-    private String neutralPermission = "CaptureThePortal.neutral";                              // The permissions that can assigned the a group/player that is not allowed to participate
+    private boolean enabletowny = false;                                                        // Enables towny support
+    private boolean enablesimpleclans = false;                                                  // Enables simpleclans support
+    private boolean enablepermissions = false;                                                  // Enables permissions support    
+    
     private static HashMap<Location, String> CapturedPortals = null;                            // Stores all the Captured Portal with their respective permission (i.e. .red when red captured it)
     private static HashMap<Location, World> WorldLocations = null;                              // Stores all the Locations with their respective World, may not work well in a multi-world enviroment
     private static HashMap<Location, PortalCooldown> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
-    private static Map<String, Integer> Colors;                                                 // Stores all the Permissions with their respective color codes
-    private static PermissionHandler permissionHandler;
+    public static Map<String, Integer> Colors;                                                  // Stores all the Permissions with their respective color codes    
+    
     private static CaptureThePortalListener PlayerListener;
+    
     private static final Logger logger = Logger.getLogger("Minecraft");
     private Hook groupPlugin;
 
@@ -66,8 +65,7 @@ public class CaptureThePortal extends JavaPlugin {
     public void onEnable()
     {
         PluginManager pm = getServer().getPluginManager();
-        initConfig();
-        usepermissions = setupPermissions();
+        initConfig();        
         if(pm.getPlugin("Factions") == null && enablefactions) {
             enablefactions = false;
             log("Faction support enabled in config but Factions plugin is not enabled!", Level.WARNING);
@@ -80,35 +78,40 @@ public class CaptureThePortal extends JavaPlugin {
             enablesimpleclans = false;
             log("SimpleClans support enabled in config but SimpleClans plugin is not enabled!", Level.WARNING);
         }
-        if(usepermissions || enablefactions || enabletowny || enablesimpleclans) {
+        if(pm.getPlugin("Permissions") == null && enablepermissions) {
+            enablepermissions = false;
+            log("Permissions support enabled in config but Permissions plugin is not enabled!", Level.WARNING);
+        } else if(pm.getPlugin("Permissions") != null)
+            enablepermissions = true;
+        
+        if(enablepermissions || enablefactions || enabletowny || enablesimpleclans) {
             int groupplugins = 0;            
-            String chosenplugin = "";
             if(enablefactions) {
-                groupPlugin = new FactionsHook();
-                chosenplugin = "Factions";
+                groupPlugin = new FactionsHook();                
                 groupplugins++;
+                enablepermissions = false;
             }
             if(enabletowny) {
-                groupPlugin = new TownyAdvancedHook(pm.getPlugin("Towny"));
-                chosenplugin = "Towny";
+                groupPlugin = new TownyAdvancedHook(pm.getPlugin("Towny"));                
                 groupplugins++;
+                enablepermissions = false;
             }
             if(enablesimpleclans) {
-                groupPlugin = new SimpleclansHook(pm.getPlugin("SimpleClans"));
-                chosenplugin = "SimpleClans";
+                groupPlugin = new SimpleclansHook(pm.getPlugin("SimpleClans"));                
                 groupplugins++;
-                
+                enablepermissions = false;
+            }
+            if(enablepermissions) {                
+                groupPlugin = new PermissionsHook(pm.getPlugin("Permissions"));                
+                groupplugins++;
             }
             if(groupplugins > 1) {
                 log("Please only enable one Group plugin, so Factions OR Towny OR Simpleclans!", Level.SEVERE);                
                 return;
-            } else if(groupplugins == 1)
-                usepermissions = false;
+            }
             
-            if(!usepermissions)
-                log("Using " + chosenplugin +  " as Group plugin", Level.INFO);                
-            else
-                log("No Group plugin enabled so using Permissions.", Level.INFO);            
+            log("Using " + groupPlugin.getName() +  " as Group plugin", Level.INFO);
+            
             PlayerListener = new CaptureThePortalListener(this);
             CapturedPortals = new HashMap();
             WorldLocations = new HashMap();
@@ -124,14 +127,8 @@ public class CaptureThePortal extends JavaPlugin {
         }
     }
     
-    public String getGroupType() {
-        if(enablefactions)
-            return "Faction";        
-        else if(enabletowny)
-            return "Town";        
-        else if(enablesimpleclans)
-            return "Clan";        
-        return "";
+    public String getGroupType() {        
+        return groupPlugin.getGroupType();        
     }
     
     public void log(String message, Level lvl) {
@@ -181,7 +178,7 @@ public class CaptureThePortal extends JavaPlugin {
          * 14 = Red
          * 15 = Black
          * 16 = White
-         */                
+         */
         Colors.put("CaptureThePortal.gold", 1);
         Colors.put("CaptureThePortal.light_purple", 2);
         Colors.put("CaptureThePortal.blue", 3);
@@ -196,21 +193,6 @@ public class CaptureThePortal extends JavaPlugin {
         Colors.put("CaptureThePortal.black", 15);
         
         Colors.put("Factions.captured", 14);
-    }
-
-    private boolean hasRights(Player player, String Permission) {
-        return ((permissionHandler != null) ? permissionHandler.has(player, Permission) : false);
-    }
-    
-    private boolean setupPermissions()
-    {
-        Plugin permissionsPlugin = getServer().getPluginManager().getPlugin("Permissions");
-        if(permissionHandler == null)
-            if(permissionsPlugin != null) {
-                permissionHandler = ((Permissions)permissionsPlugin).getHandler();                
-                return true;
-            }               
-        return false;
     }
 
     private boolean checkSquare(Block block, World world) {
@@ -275,35 +257,8 @@ public class CaptureThePortal extends JavaPlugin {
         return false;
     }
 
-    /**
-     * Returns a CaptureThePortal.color if faction support is disabled
-     * and returns the faction name if it's enabled
-     * 
-     * @param player
-     * @return String
-     */
-    public String getTeamOfPlayer(Player player) {        
-        if(usepermissions) {
-            if(hasRights(player, neutralPermission))
-                return "";
-
-            int amount = 0;
-            String returnPerm = "";
-            Iterator it = Colors.entrySet().iterator();
-            while(it.hasNext()) {
-                Map.Entry pairs = (Map.Entry)it.next();
-                if(hasRights(player, (String)pairs.getKey())) {
-                    returnPerm = (String)pairs.getKey();
-                    amount++;
-                }
-            }
-
-            if(amount > 1)
-                return "";
-            else
-                return returnPerm;
-        } else
-            return groupPlugin.getGroupByName(player);        
+    public String getTeamOfPlayer(Player player) {
+        return groupPlugin.getGroupByPlayer(player);
     }
     
     public void colorSquare(Block center, World world, int color) {        
@@ -337,15 +292,11 @@ public class CaptureThePortal extends JavaPlugin {
         if(!capture_message.equals("")) {
             String team = "";
             ChatColor chat;
-            if(usepermissions) {
-                team = getTeamOfPlayer(player);
-                team = team.replace("CaptureThePortal.", "");                
-                chat = ChatColor.valueOf(team.toUpperCase());
-                team = team.replace("_", " ");
-            } else {
-                team = groupPlugin.getGroupByName(player);
+            team = groupPlugin.getGroupByPlayer(player);
+            if(enablepermissions)            
+                chat = ChatColor.valueOf(team.replace(" ", "_").toUpperCase());
+            else
                 chat = ChatColor.WHITE;
-            }
             getServer().broadcastMessage(ChatColor.GREEN+capture_message.replace("[team]", chat+team+ChatColor.GREEN).replace("[type]", captureType).replace("[group]", getGroupType()));
         }
     }
@@ -421,9 +372,13 @@ public class CaptureThePortal extends JavaPlugin {
         }
         return 2;
     }
+    
+    public Boolean isAllied(Player Player, String sOtherPlayer) {
+        return groupPlugin.isAllied(Player, sOtherPlayer);
+    }
 
     public int getColor(String Permission) {
-        if(usepermissions) {
+        if(enablepermissions) {
             if(Colors.containsKey(Permission))
                 return Colors.get(Permission);
             else

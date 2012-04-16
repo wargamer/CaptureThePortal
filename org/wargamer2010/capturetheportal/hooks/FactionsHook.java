@@ -8,6 +8,13 @@ import com.massivecraft.factions.struct.Relation;
 import org.bukkit.entity.Player;
 
 public class FactionsHook implements Hook {
+    public String getGroupType() {
+        return "Faction";
+    }
+    
+    public String getName() {
+        return "SimpleClans";
+    }
     
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         FPlayer FP = FPlayers.i.get(CapturingPlayer);
@@ -28,7 +35,7 @@ public class FactionsHook implements Hook {
             return false;
     }
     
-    public String getGroupByName(Player player) {
+    public String getGroupByPlayer(Player player) {
         FPlayer FP = FPlayers.i.get(player);
         Faction Fac = FP.getFaction();
         

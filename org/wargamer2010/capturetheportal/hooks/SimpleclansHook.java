@@ -12,6 +12,14 @@ public class SimpleclansHook implements Hook {
         instance = (SimpleClans)SC;
     }
     
+    public String getName() {
+        return "SimpleClans";
+    }
+    
+    public String getGroupType() {
+        return "Clan";
+    }
+    
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         if(instance == null)
             return false;
@@ -21,7 +29,7 @@ public class SimpleclansHook implements Hook {
         return CP.isAlly(tag);
     }
     
-    public String getGroupByName(Player player) {
+    public String getGroupByPlayer(Player player) {
         if(instance == null)
             return "";
         Clan CP = instance.getClanManager().getClanByPlayerName(player.getName());

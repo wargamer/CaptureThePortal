@@ -128,7 +128,11 @@ public class CaptureThePortalListener implements Listener {
             Player[] online = event.getPlayer().getServer().getOnlinePlayers();
             for (int i = 0; i < online.length; ++i) {
                 Player p = online[i];
-                if(p.getWorld().getEnvironment() == event.getTo().getWorld().getEnvironment() && !capture.getTeamOfPlayer(player).equals(capture.getTeamOfPlayer(p))) {
+                if(p == null)
+                    continue;
+                if(p.getWorld().getEnvironment() == event.getTo().getWorld().getEnvironment() 
+                        && !capture.getTeamOfPlayer(player).equals(capture.getTeamOfPlayer(p))
+                        && !capture.isAllied(player, p.getName())) {
                     p.sendMessage("Another team captured the portal!");
                     p.sendMessage("You are now forced to respawn!");
                     p.teleport(player.getWorld().getSpawnLocation());

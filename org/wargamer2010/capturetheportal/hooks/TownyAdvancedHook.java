@@ -13,6 +13,14 @@ public class TownyAdvancedHook implements Hook {
         instance = (Towny)TA;
     }
     
+    public String getName() {
+        return "Towny";
+    }
+    
+    public String getGroupType() {
+        return "Town";
+    }
+    
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         try {
             Location spawnlocation = instance.getTownyUniverse().getTownSpawnLocation(CapturingPlayer);
@@ -23,7 +31,7 @@ public class TownyAdvancedHook implements Hook {
         }
     }
     
-    public String getGroupByName(Player player) {
+    public String getGroupByPlayer(Player player) {
         try {
             Location spawnlocation = instance.getTownyUniverse().getTownSpawnLocation(player);
             return instance.getTownyUniverse().getTownName(spawnlocation);            
