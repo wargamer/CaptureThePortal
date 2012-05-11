@@ -64,12 +64,14 @@ public class CaptureThePortalListener implements Listener {
             else {
                 Location getTo = new Location(player.getWorld(), event.getFrom().getX(), event.getFrom().getY(), event.getFrom().getZ());
                 double radius = 0.8;
-                double precision = 0.1;
+                double precision = 0.3;
                 
                 for(double x = -radius; x <= radius && touchingMaterial == null; x += precision) {
                     for(double z = -radius; z <= radius && touchingMaterial == null; z += precision) {
-                        for(double y = -radius; y <= radius && touchingMaterial == null; y += precision) {
-                            getTo = new Location(player.getWorld(), event.getFrom().getX(), event.getFrom().getY(), event.getFrom().getZ());                            
+                        for(double y = -radius; y <= radius && touchingMaterial == null; y += precision) {                            
+                            getTo.setX(event.getFrom().getX());
+                            getTo.setY(event.getFrom().getY());
+                            getTo.setZ(event.getFrom().getZ());
                             if((touchingMaterial = isPortalMaterial(getTo.add(x, y, z).getBlock())) != null) {
                                 touchingPortal = true;
                                 break;

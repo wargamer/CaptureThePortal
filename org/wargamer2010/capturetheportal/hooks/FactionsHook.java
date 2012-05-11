@@ -13,7 +13,7 @@ public class FactionsHook implements Hook {
     }
     
     public String getName() {
-        return "SimpleClans";
+        return "Factions";
     }
     
     public Boolean isAllied(Player CapturingPlayer, String tag) {

@@ -2,22 +2,25 @@ package org.wargamer2010.capturetheportal;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Iterator;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.Location;
 import org.bukkit.ChatColor;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.Bukkit;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
-import org.bukkit.block.BlockFace;
+
 import org.wargamer2010.capturetheportal.hooks.*;
 
 public class CaptureThePortal extends JavaPlugin {
@@ -58,7 +61,7 @@ public class CaptureThePortal extends JavaPlugin {
                     this.colorSquare(woolCenter, world, 0);
                 }
             }
-        log("disabled", Level.INFO);
+        log("Disabled", Level.INFO);
     }
 
     @Override
@@ -119,12 +122,34 @@ public class CaptureThePortal extends JavaPlugin {
             Timers = new HashMap();
             initColors();
             pm.registerEvents(PlayerListener, this);
-            log("enabled", Level.INFO);
+            log("Enabled", Level.INFO);
         } else {
             // Permission system could not be hooked, running plugin passively..
             log("Permission system not detected and no other Group plugin found or not enabled in config. Plugin can't run", Level.SEVERE);            
             return;
         }
+    }
+    
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String args[]) {
+        String commandName = cmd.getName().toLowerCase();        
+        if(!commandName.equalsIgnoreCase("capturetheportal"))
+            return true;
+        if(args.length != 1)
+            return false;
+        if((sender instanceof Player) && !((Player)sender).isOp()) {
+            ((Player)sender).sendMessage(ChatColor.RED + "You are not allowed to use that command. OP only.");
+            return true;
+        }
+        if(args[0].equals("reload")) {
+            Bukkit.getServer().getPluginManager().disablePlugin(this);
+            Bukkit.getServer().getPluginManager().enablePlugin(this);
+        } else
+            return false;
+        log("Reloaded", Level.INFO);
+        if((sender instanceof Player))
+            ((Player)sender).sendMessage(ChatColor.GREEN + "CaptureThePortal has been reloaded");
+        return true;
     }
     
     public String getGroupType() {        
