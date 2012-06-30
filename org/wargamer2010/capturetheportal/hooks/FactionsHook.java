@@ -6,6 +6,7 @@ import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.struct.Relation;
 import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
 
 public class FactionsHook implements Hook {
     public String getGroupType() {
@@ -14,6 +15,10 @@ public class FactionsHook implements Hook {
     
     public String getName() {
         return "Factions";
+    }
+    
+    public ChatColor getGroupColor(Player player) {
+        return null;
     }
     
     public Boolean isAllied(Player CapturingPlayer, String tag) {

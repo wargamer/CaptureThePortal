@@ -1,6 +1,7 @@
 package org.wargamer2010.capturetheportal;
 
-import org.bukkit.Server;
+import org.wargamer2010.capturetheportal.Utils.Util;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.block.Block;
 import org.bukkit.ChatColor;
@@ -9,23 +10,19 @@ public class PortalCooldown implements Runnable {
     private CaptureThePortal plugin;
     private Block button;
     private int cooldown_left;
+    private String group;
+    private String type;    
+    private int decremented;    
     private Player capturer;
-    private Server server;        
-    private String cooldown_message;
-    private String type;
-    private int cooldown_message_timeleft;
-    private int decremented;
 
-    PortalCooldown(CaptureThePortal CTP, Block block, int time, Player capt, Server serv, String cdm, int cdm_time, String t, int pDecremented) {
+    PortalCooldown(CaptureThePortal CTP, Block block, int time, String g, String t, int pDecremented, Player pCapturer) {
         cooldown_left = time;
-        capturer = capt;
-        server = serv;
-        cooldown_message = cdm;
-        cooldown_message_timeleft = cdm_time;
+        group = g;        
         plugin = CTP;
         button = block;
         type = t;
-        decremented = pDecremented;
+        decremented = pDecremented;        
+        capturer = pCapturer;
     }
 
     public int getCooldown() {
@@ -40,21 +37,25 @@ public class PortalCooldown implements Runnable {
         return capturer;
     }
 
+    @Override
     public void run() {
         cooldown_left -= 10;
-        decremented += 1;
+        decremented += 1;               
         if(cooldown_left != 0) {
-            if(!cooldown_message.equals("") && type.equals("cooldown") && cooldown_left == cooldown_message_timeleft)
-                server.broadcastMessage(ChatColor.GREEN+cooldown_message.replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left/10)+ChatColor.GREEN)));
-            else if(!cooldown_message.equals("") && type.equals("cooldown") && decremented == plugin.getCooldownInterval()) {
-                server.broadcastMessage(ChatColor.GREEN+cooldown_message.replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left/10)+ChatColor.GREEN)));
+            if(type.equals("cooldown") && cooldown_left == plugin.getCoolMessageTime())                
+                Util.broadcastMessage(ChatColor.GREEN+plugin.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left/10)+ChatColor.GREEN)));
+            else if(type.equals("cooldown") && decremented == plugin.getCooldownInterval()) {
+                Util.broadcastMessage(ChatColor.GREEN+plugin.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left/10)+ChatColor.GREEN)));
                 decremented = 0;
             }
-            PortalCooldown pc = new PortalCooldown(plugin, button, cooldown_left, capturer, server, cooldown_message, cooldown_message_timeleft, type, decremented);
+            PortalCooldown pc = new PortalCooldown(plugin, button, cooldown_left, group, type, decremented, capturer);
             plugin.addTimer(button.getLocation(), pc);
-            server.getScheduler().scheduleSyncDelayedTask(plugin, pc, 10);
+            if(type.equals("cooldown"))
+                plugin.addCaptureLocation(button, group, (cooldown_left/10));
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, pc, 10);
+        } else if(type.equals("cooldown")) {
+            plugin.addCaptureLocation(button, group, 0);
+            Util.broadcastMessage(plugin.getMessage("available_message"));
         }
-
-
     }
 }

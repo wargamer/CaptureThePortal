@@ -7,6 +7,7 @@ import com.palmergames.bukkit.towny.utils.CombatUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.ChatColor;
 
 public class TownyAdvancedHook implements Hook {
     Towny instance = null;
@@ -21,6 +22,10 @@ public class TownyAdvancedHook implements Hook {
     
     public String getGroupType() {
         return "Town";
+    }
+    
+    public ChatColor getGroupColor(Player player) {
+        return null;
     }
     
     public Boolean isAllied(Player CapturingPlayer, String tag) {

@@ -1,6 +1,8 @@
 package org.wargamer2010.capturetheportal;
 
-import org.bukkit.Server;
+import org.wargamer2010.capturetheportal.Utils.Util;
+import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.entity.Player;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -10,22 +12,16 @@ public class CapturePortal implements Runnable {
     private Player capturer;
     private Block button;
     private Location standing;
-    private int cooldown_time;        
-    private Server server;
-    private int capturedelay_left;
-    private String cooldown_message;
-    private int cooldown_message_timeleft;   
+    private int cooldown_time;            
+    private int capturedelay_left;        
 
-    CapturePortal(CaptureThePortal CTP, Player pl, Block block, int time, Server serv, int left, Location stand, String cdm, int cdm_time) {
+    CapturePortal(CaptureThePortal CTP, Player pl, Block block, int time, int left, Location stand) {
         plugin = CTP;
         capturer = pl;
         button = block;
         standing = stand;
-        cooldown_time = time;
-        server = serv;
-        capturedelay_left = left;
-        cooldown_message = cdm;
-        cooldown_message_timeleft = cdm_time;
+        cooldown_time = time;        
+        capturedelay_left = left;                
     }
 
     private boolean isMoved(Location loc1, Location loc2, double threshold) {
@@ -39,23 +35,26 @@ public class CapturePortal implements Runnable {
     }
 
     public void run() {
+        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
         if(!isMoved(button.getLocation(), capturer.getLocation(), 1.5)) {
             if(capturedelay_left != 0) {
                 capturedelay_left -= 10; // Decrementing by a second (10 deciseconds)
-                server.getScheduler().scheduleSyncDelayedTask(plugin, new CapturePortal(plugin, capturer, button, cooldown_time, server, capturedelay_left, standing, cooldown_message, cooldown_message_timeleft), 10);                    
-                PortalCooldown pc = new PortalCooldown(plugin, button, plugin.getCapturedelay(), capturer, server, cooldown_message, cooldown_message_timeleft, "delay", 0);
+                scheduler.scheduleSyncDelayedTask(plugin, new CapturePortal(plugin, capturer, button, cooldown_time, capturedelay_left, standing), 10);                    
+                PortalCooldown pc = new PortalCooldown(plugin, button, plugin.getCapturedelay(), plugin.getTeamOfPlayer(capturer), "delay", 0, capturer);
                 plugin.addTimer(button.getLocation(), pc);
-                server.getScheduler().scheduleSyncDelayedTask(plugin, pc, 10);
-            } else {
-                plugin.addCaptureLocation(button, capturer);
+                scheduler.scheduleSyncDelayedTask(plugin, pc, 10);
+            } else {                
+                plugin.addCaptureLocation(button, plugin.getTeamOfPlayer(capturer), 0);
                 Block woolCenter = capturer.getWorld().getBlockAt(button.getX(), (button.getY()-1), button.getZ());
-                plugin.colorSquare(woolCenter, capturer.getWorld(), (int)plugin.getColor(plugin.getTeamOfPlayer(capturer)));
-                capturer.sendMessage("Succesfully captured the portal!");
-                PortalCooldown pc = new PortalCooldown(plugin, button, cooldown_time, capturer, server, cooldown_message, cooldown_message_timeleft, "cooldown", 0);
+                plugin.colorSquare(woolCenter, capturer.getWorld(), (int)plugin.getColor(capturer));
+                Util.sendMessagePlayer(plugin.getMessage("player_captured_it"), capturer);
+                PortalCooldown pc = new PortalCooldown(plugin, button, cooldown_time, plugin.getTeamOfPlayer(capturer), "cooldown", 0, capturer);
                 plugin.addTimer(button.getLocation(), pc);
-                server.getScheduler().scheduleSyncDelayedTask(plugin, pc, 10);
+                scheduler.scheduleSyncDelayedTask(plugin, pc, 10);
             }
-        } else
-            capturer.sendMessage("Failed to capture the Portal because you moved.");
+        } else {
+            CaptureThePortal.Storage.deleteCapture(button.getLocation());
+            Util.sendMessagePlayer(plugin.getMessage("player_failed_capture"), capturer);            
+        }
     }
 }

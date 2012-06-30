@@ -1,5 +1,6 @@
 package org.wargamer2010.capturetheportal;
 
+import org.wargamer2010.capturetheportal.Utils.Util;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -89,12 +90,10 @@ public class CaptureThePortalListener implements Listener {
             
             if(touchingPortal && isAllowed != 2) {
                 int delta = 1;
-                if(!capture.getDieFromUncapturedPortal()) {
-                    player.sendMessage("Your team has not captured this portal yet so,");
-                    player.sendMessage("you're not allowed to use it!");
-                } else {
-                    player.sendMessage("Your body was ripped apart while trying to cross the portal.");
-                    player.sendMessage("The portal does not belong to your faction.");
+                if(!capture.getDieFromUncapturedPortal())
+                    Util.sendMessagePlayer(capture.getMessage("player_not_allowed_to_use"), player);
+                else {
+                    Util.sendMessagePlayer(capture.getMessage("player_not_allowed_die_use"), player);
                     player.damage(1000);
                     delta = 3;
                 }
@@ -116,8 +115,8 @@ public class CaptureThePortalListener implements Listener {
                 player.teleport(loc);                
             }
         }
-    }
-
+    } 
+    
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerPortal(final PlayerPortalEvent event) {
         if(event.getPlayer() != null && event.getFrom() != null && event.getTo() != null) {
@@ -135,8 +134,7 @@ public class CaptureThePortalListener implements Listener {
                 if(p.getWorld().getEnvironment() == event.getTo().getWorld().getEnvironment() 
                         && !capture.getTeamOfPlayer(player).equals(capture.getTeamOfPlayer(p))
                         && !capture.isAllied(player, p.getName())) {
-                    p.sendMessage("Another team captured the portal!");
-                    p.sendMessage("You are now forced to respawn!");
+                    Util.sendMessagePlayer(capture.getMessage("player_forced_respawn"), p);                    
                     p.teleport(player.getWorld().getSpawnLocation());
                 }
             }

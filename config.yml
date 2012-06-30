@@ -3,12 +3,25 @@ CaptureThePortal:
     delay: 6
     cooldown: 120
     cooldown_message_timeleft: 20
-    cooldown_message_timeleft_increments: 0
-    capture_message: '[team] [group] is attempting to capture the [type].'
-    cooldown_message: The portal will be available for capture again within [cooldown].
+    cooldown_message_timeleft_increments: 0    
+    fullgroupnames: false
+    persistcapture: true
     enableEndersupport: false    
     enablewormholesupport: false
+    enablestargatesupport: false
     enablepermissions: false
     enablefactionsupport: false
     enabletownysupport: false
     enablesimpleclanssupport: false
+    messages:
+      capture_message: '[team] [group] is attempting to capture the [type].'
+      cooldown_message: 'The portal will be available for capture again within [cooldown].'
+      available_message: 'The portal is now ready to be captured!'
+      player_portal_is_cooldown: 'This Portal is on Cooldown, total cooldown time is [cooldown]'
+      player_someone_else_capturing: 'Someone else is currently capturing this portal!'
+      player_capturing_portal_holdit: 'Capturing Portal! Hold it for [capturetime] to capture it!'
+      player_not_allowed_to_use: 'Your team has not captured this portal yet so, you are not allowed to use it!'
+      player_not_allowed_die_use: 'Your body was ripped apart while trying to cross the portal. The portal does not belong to your faction.'
+      player_forced_respawn: 'Another team captured the portal! You are now forced to respawn!'
+      player_captured_it: 'Succesfully captured the portal!'
+      player_failed_capture: 'Failed to capture the Portal because you moved.'
