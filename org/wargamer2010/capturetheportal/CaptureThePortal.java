@@ -41,6 +41,7 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean enable_ender = false;                                                       // Support for Ender portals, is disabled by default    
     private boolean enabletowny = false;                                                        // Enables towny support
     private boolean enablesimpleclans = false;                                                  // Enables simpleclans support
+    private boolean enablegods = false;                                                  // Enables gods support
     private boolean enablepermissions = false;                                                  // Enables permissions support    
     
     private static HashMap<Location, PortalCooldown> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
@@ -88,6 +89,10 @@ public class CaptureThePortal extends JavaPlugin {
             enablesimpleclans = false;
             log("SimpleClans support enabled in config but SimpleClans plugin is not enabled!", Level.WARNING);
         }
+        if(pm.getPlugin("Gods") == null && enablegods) {
+            enablegods = false;
+            log("Gods support enabled in config but Gods plugin is not enabled!", Level.WARNING);
+        }
         if(pm.getPlugin("Permissions") == null && enablepermissions) {
             enablepermissions = false;
             log("Permissions support enabled in config but Permissions plugin is not enabled!", Level.WARNING);
@@ -111,12 +116,17 @@ public class CaptureThePortal extends JavaPlugin {
                 groupplugins++;
                 enablepermissions = false;
             }
+            if(enablegods) {
+                groupPlugin = new GodsHook(pm.getPlugin("Gods"));                
+                groupplugins++;
+                enablepermissions = false;
+            }
             if(enablepermissions) {                
                 groupPlugin = new PermissionsHook(pm.getPlugin("Permissions"));                
                 groupplugins++;
-            }
+            }            
             if(groupplugins > 1) {
-                log("Please only enable one Group plugin, so Factions OR Towny OR Simpleclans!", Level.SEVERE);                
+                log("Please only enable one Group plugin, so Factions OR Towny OR Simpleclans OR Gods!", Level.SEVERE);                
                 return;
             }
             
@@ -210,6 +220,7 @@ public class CaptureThePortal extends JavaPlugin {
         enablefactions = (config.getBoolean("CaptureThePortal.enablefactionsupport", enablefactions));
         enabletowny = (config.getBoolean("CaptureThePortal.enabletownysupport", enabletowny));
         enablesimpleclans = (config.getBoolean("CaptureThePortal.enablesimpleclanssupport", enablesimpleclans));
+        enablegods = (config.getBoolean("CaptureThePortal.enablegodssupport", enablegods));
         enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
         
         log("Configuration loaded succesfully", Level.INFO);

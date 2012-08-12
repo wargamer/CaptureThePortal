@@ -13,6 +13,7 @@ CaptureThePortal:
     enablefactionsupport: false
     enabletownysupport: false
     enablesimpleclanssupport: false
+    enablegodssupport: false
     messages:
       capture_message: '[team] [group] is attempting to capture the [type].'
       cooldown_message: 'The portal will be available for capture again within [cooldown].'
