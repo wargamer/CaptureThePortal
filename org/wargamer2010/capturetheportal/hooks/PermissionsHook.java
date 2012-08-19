@@ -15,8 +15,8 @@ public class PermissionsHook implements Hook {
     PermissionHandler instance = null;
     private String neutralPermission = "CaptureThePortal.neutral"; // The permissions that can be assigned to a group/player that is not allowed to participate
     
-    public PermissionsHook(Plugin SC) {
-        instance = ((Permissions)SC).getHandler();
+    public void setPlugin(Plugin pl) {
+        instance = ((Permissions)pl).getHandler();
     }
     
     public String getName() {

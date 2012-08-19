@@ -1,8 +1,9 @@
 package org.wargamer2010.capturetheportal;
 
+import org.wargamer2010.capturetheportal.timers.CapturePortal;
+import org.wargamer2010.capturetheportal.timers.PortalCooldown;
 import org.wargamer2010.capturetheportal.Utils.Util;
 import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -23,8 +24,11 @@ import java.util.logging.Level;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
+import org.wargamer2010.capturetheportal.Utils.portalUtil;
 import org.wargamer2010.capturetheportal.hooks.*;
+import org.wargamer2010.capturetheportal.timers.*;
 
 public class CaptureThePortal extends JavaPlugin {
     private int capturedelay = 60;                                                              // How long it takes in deciseconds (1/10th of a second)
@@ -44,6 +48,7 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean enablegods = false;                                                  // Enables gods support
     private boolean enablepermissions = false;                                                  // Enables permissions support    
     
+    private static HashMap<String, Boolean> supportedHooks;
     private static HashMap<Location, PortalCooldown> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
     public static Map<String, Integer> Colors;                                                  // Stores all the Permissions with their respective color codes        
     public static CapturesStorage Storage;
@@ -76,62 +81,39 @@ public class CaptureThePortal extends JavaPlugin {
     public void onEnable()
     {
         PluginManager pm = getServer().getPluginManager();
-        initConfig();        
-        if(pm.getPlugin("Factions") == null && enablefactions) {
-            enablefactions = false;
-            log("Faction support enabled in config but Factions plugin is not enabled!", Level.WARNING);
-        } 
-        if(pm.getPlugin("Towny") == null && enabletowny) {
-            enabletowny = false;
-            log("Towny support enabled in config but Towny plugin is not enabled!", Level.WARNING);
-        }
-        if(pm.getPlugin("SimpleClans") == null && enablesimpleclans) {
-            enablesimpleclans = false;
-            log("SimpleClans support enabled in config but SimpleClans plugin is not enabled!", Level.WARNING);
-        }
-        if(pm.getPlugin("Gods") == null && enablegods) {
-            enablegods = false;
-            log("Gods support enabled in config but Gods plugin is not enabled!", Level.WARNING);
-        }
-        if(pm.getPlugin("Permissions") == null && enablepermissions) {
-            enablepermissions = false;
-            log("Permissions support enabled in config but Permissions plugin is not enabled!", Level.WARNING);
-        } else if(pm.getPlugin("Permissions") != null)
-            enablepermissions = true;
+        initConfig();   
+        initAllowedHooks();
         
-        if(enablepermissions || enablefactions || enabletowny || enablesimpleclans) {
-            int groupplugins = 0;            
-            if(enablefactions) {
-                groupPlugin = new FactionsHook();                
-                groupplugins++;
-                enablepermissions = false;
+        int groupplugins = 0;
+        groupPlugin = null;
+        for(Map.Entry<String, Boolean> supported : supportedHooks.entrySet())
+        {
+            if(pm.getPlugin(supported.getKey()) == null && supported.getValue())
+                log(supported.getKey() + " support enabled in config but " + supported.getKey() + " plugin is not enabled!", Level.WARNING);
+            else if(supported.getValue()) {
+                try {
+                    Class<Object> fc = (Class<Object>)Class.forName("org.wargamer2010.capturetheportal.hooks."+supported.getKey()+"Hook");
+                    groupplugins++;
+                    if(groupPlugin == null) {
+                        groupPlugin = (Hook)fc.newInstance();
+                        groupPlugin.setPlugin(pm.getPlugin(supported.getKey()));
+                    } else {
+                        log("Please only enable one Group plugin at a time!", Level.SEVERE);                
+                        return;
+                    }
+                }
+                catch(ClassNotFoundException notfoundex) { }
+                catch(InstantiationException instex) { }         
+                catch(IllegalAccessException illex) { }
             }
-            if(enabletowny) {
-                groupPlugin = new TownyAdvancedHook(pm.getPlugin("Towny"));                
-                groupplugins++;
-                enablepermissions = false;
-            }
-            if(enablesimpleclans) {
-                groupPlugin = new SimpleclansHook(pm.getPlugin("SimpleClans"));                
-                groupplugins++;
-                enablepermissions = false;
-            }
-            if(enablegods) {
-                groupPlugin = new GodsHook(pm.getPlugin("Gods"));                
-                groupplugins++;
-                enablepermissions = false;
-            }
-            if(enablepermissions) {                
-                groupPlugin = new PermissionsHook(pm.getPlugin("Permissions"));                
-                groupplugins++;
-            }            
-            if(groupplugins > 1) {
-                log("Please only enable one Group plugin, so Factions OR Towny OR Simpleclans OR Gods!", Level.SEVERE);                
-                return;
-            }
-            
-            log("Using " + groupPlugin.getName() +  " as Group plugin", Level.INFO);
-            
+        }    
+        if(groupplugins == 0 && groupPlugin == null) {
+            log("Please enable 1 Group plugin in the config.yml!", Level.SEVERE);
+            return;
+        } else if(groupPlugin == null) {
+            log("None of the Group plugins that were enabled in the config.yml could be found running! Please make sure you have the right one enabled in the config.yml!", Level.SEVERE);
+            return;
+        } else {            
             PlayerListener = new CaptureThePortalListener(this);                        
             Storage = new CapturesStorage(new File(this.getDataFolder(),"capturedpoints.yml"), persistcapture);            
             Colors = new HashMap();
@@ -140,11 +122,7 @@ public class CaptureThePortal extends JavaPlugin {
             if(persistcapture)
                 spinCooldowns();
             pm.registerEvents(PlayerListener, this);
-            log("Enabled", Level.INFO);
-        } else {
-            // Permission system could not be hooked, running plugin passively..
-            log("Permission system not detected and no other Group plugin found or not enabled in config. Plugin can't run", Level.SEVERE);            
-            return;
+            log("Enabled with " + groupPlugin.getName() + " support", Level.INFO);
         }
     }
     
@@ -182,6 +160,15 @@ public class CaptureThePortal extends JavaPlugin {
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, pc, 10);
             }
         }
+    }
+    
+    public void initAllowedHooks() {
+        supportedHooks = new HashMap<String, Boolean>();
+        supportedHooks.put("Factions", enablefactions);
+        supportedHooks.put("Towny", enabletowny);
+        supportedHooks.put("SimpleClans", enablesimpleclans);
+        supportedHooks.put("Gods", enablegods);
+        supportedHooks.put("Permissions", enablepermissions);
     }
     
     public String getGroupType() {        
@@ -275,73 +262,6 @@ public class CaptureThePortal extends JavaPlugin {
         return isWoolSquare;
     }
     
-    
-    private boolean checkWormHoleDailer(Block block, World world) {
-        BlockFace dailerOrientation = BlockFace.SELF;        
-        
-        for(int x = -1; x <= 1; x++) {
-            for(int z = -1; z <= 1; z++) {
-                if(x == 0 && z == 0) continue;
-                Block requireWool = world.getBlockAt(block.getX()+x, block.getY(), block.getZ()+z);
-                if(requireWool.getType().equals(Material.OBSIDIAN)
-                        && requireWool.getRelative(BlockFace.UP).getType().equals(Material.OBSIDIAN)) {
-                    
-                    dailerOrientation = Util.getFaceWithMaterial(Material.WOOL, requireWool);
-                    if(dailerOrientation == BlockFace.SELF) return false;
-
-                    BlockFace forward = Util.getOrientation(dailerOrientation, "cont");
-                    BlockFace backward = Util.getOrientation(forward, "opp");
-                    BlockFace otherside = Util.getOrientation(dailerOrientation, "opp");
-                    
-                    Block requireLever = world.getBlockAt(block.getX()+x, block.getY()+1, block.getZ()+z);
-                    Block requireObsidian = world.getBlockAt(block.getX()+x, block.getY(), block.getZ()+z);
-                    
-                    if((requireLever.getRelative(forward).getType() == Material.LEVER
-                            || requireLever.getRelative(backward).getType() == Material.LEVER)
-                        && requireObsidian.getRelative(otherside).getType() == Material.OBSIDIAN
-                        && requireObsidian.getRelative(otherside).getRelative(BlockFace.UP).getType() == Material.OBSIDIAN
-                        && (requireObsidian.getRelative(otherside).getRelative(BlockFace.UP).getRelative(forward).getType() == Material.WALL_SIGN
-                            || requireObsidian.getRelative(otherside).getRelative(BlockFace.UP).getRelative(backward).getType() == Material.WALL_SIGN))
-                        return true;
-                    else
-                        continue;
-                }                
-            }
-        }
-        return false;
-    }
-    
-    private boolean checkEndPortal(Block block, World world) {
-        int radius = 3;
-        for(int x = -radius; x <= radius; x++) {
-            for(int z = -radius; z <= radius; z++) {
-                for(int y = -radius; y <= radius; y++) {
-                    if(world.getBlockAt(block.getX()+x, block.getY(), block.getZ()+z).getType() == Material.ENDER_PORTAL)
-                        return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    private boolean checkStargatePortal(Block woolblock, World world) {
-        Block button = world.getBlockAt(woolblock.getX(), woolblock.getY()+1, woolblock.getZ());
-        List<BlockFace> faces = new ArrayList();
-        faces.add(BlockFace.NORTH);        
-        faces.add(BlockFace.EAST);
-        faces.add(BlockFace.SOUTH);
-        faces.add(BlockFace.WEST);        
-        for(BlockFace face : faces) {            
-            if(button.getRelative(face).getType() == Material.OBSIDIAN) {                
-                for(BlockFace sface : faces) {                    
-                    if(button.getRelative(face).getRelative(sface).getType() == Material.STONE_BUTTON)
-                        return true;
-                }
-            }
-        }        
-        return false;
-    }
-
     public String getTeamOfPlayer(Player player) {
         return groupPlugin.getGroupByPlayer(player);
     }
@@ -361,11 +281,11 @@ public class CaptureThePortal extends JavaPlugin {
     private String validCapture(Block block, Player player) {
         String captureType = "";
         Block woolCenter = player.getWorld().getBlockAt(block.getX(), (block.getY()-1), block.getZ());
-        if(this.enable_ender && checkEndPortal(woolCenter, player.getWorld()))
+        if(this.enable_ender && portalUtil.checkEndPortal(woolCenter, player.getWorld()))
             captureType = "End";
-        else if(this.enablewormholes && checkWormHoleDailer(woolCenter, player.getWorld()))
+        else if(this.enablewormholes && portalUtil.checkWormHoleDailer(woolCenter, player.getWorld()))
             captureType = "Wormhole";
-        else if(this.enablestargates && checkStargatePortal(woolCenter, player.getWorld()))
+        else if(this.enablestargates && portalUtil.checkStargatePortal(woolCenter, player.getWorld()))
             captureType = "Startgate";
         else if(checkSquare(woolCenter, player.getWorld()))
             captureType = "Nether";                

@@ -9,7 +9,7 @@ CaptureThePortal:
     enableEndersupport: false    
     enablewormholesupport: false
     enablestargatesupport: false
-    enablepermissions: false
+    enablepermissions: true
     enablefactionsupport: false
     enabletownysupport: false
     enablesimpleclanssupport: false

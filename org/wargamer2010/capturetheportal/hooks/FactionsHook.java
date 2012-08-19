@@ -7,8 +7,13 @@ import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.struct.Relation;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
+import org.bukkit.plugin.Plugin;
 
 public class FactionsHook implements Hook {
+    public void setPlugin(Plugin pl) {
+        
+    }
+    
     public String getGroupType() {
         return "Faction";
     }

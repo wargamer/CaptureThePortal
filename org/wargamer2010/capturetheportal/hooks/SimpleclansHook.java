@@ -7,11 +7,11 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
 
-public class SimpleclansHook implements Hook {
+public class SimpleClansHook implements Hook {
     SimpleClans instance = null;
     
-    public SimpleclansHook(Plugin SC) {
-        instance = (SimpleClans)SC;
+    public void setPlugin(Plugin pl) {
+        instance = (SimpleClans)pl;
     }
     
     public String getName() {
