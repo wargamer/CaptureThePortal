@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
+import org.wargamer2010.capturetheportal.Utils.Util;
 
 public class SimpleClansHook implements Hook {
     SimpleClans instance = null;
@@ -27,21 +28,18 @@ public class SimpleClansHook implements Hook {
         if(CP == null)
             return null;
         if(CP.getTagLabel().length() < 3)
-            return null;
-        if(ChatColor.getLastColors(CP.getTagLabel()).length() == 2) {
-            ChatColor color = ChatColor.getByChar(ChatColor.getLastColors(CP.getTagLabel()).charAt(1));            
-            return color;        
-        }
-        return null;
-        
+            return null;            
+        return Util.getColorFromString(CP.getTagLabel(), 3);
     }
     
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         if(instance == null)
             return false;
-        Clan CP = instance.getClanManager().getClanByPlayerName(CapturingPlayer.getName());
+        Clan CP = instance.getClanManager().getClanByPlayerName(CapturingPlayer.getName());        
         if(CP == null)
             return false;
+        if(CP.getTagLabel().equals(tag) || CP.getName().equals(tag))
+            return true;
         return CP.isAlly(tag);
     }
     

@@ -98,13 +98,13 @@ public class CaptureThePortal extends JavaPlugin {
                         groupPlugin = (Hook)fc.newInstance();
                         groupPlugin.setPlugin(pm.getPlugin(supported.getKey()));
                     } else {
-                        log("Please only enable one Group plugin at a time!", Level.SEVERE);                
+                        log("Please only enable one Group plugin at a time!", Level.SEVERE);
                         return;
                     }
                 }
-                catch(ClassNotFoundException notfoundex) { }
-                catch(InstantiationException instex) { }         
-                catch(IllegalAccessException illex) { }
+                catch(ClassNotFoundException notfoundex) {  }
+                catch(InstantiationException instex) {  }
+                catch(IllegalAccessException illex) {  }
             }
         }    
         if(groupplugins == 0 && groupPlugin == null) {
