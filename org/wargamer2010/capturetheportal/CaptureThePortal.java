@@ -168,7 +168,7 @@ public class CaptureThePortal extends JavaPlugin {
         supportedHooks.put("Towny", enabletowny);
         supportedHooks.put("SimpleClans", enablesimpleclans);
         supportedHooks.put("Gods", enablegods);
-        supportedHooks.put("Permissions", enablepermissions);
+        supportedHooks.put("Vault", enablepermissions);
     }
     
     public String getGroupType() {        
@@ -205,6 +205,7 @@ public class CaptureThePortal extends JavaPlugin {
         enablewormholes = (config.getBoolean("CaptureThePortal.enablewormholesupport", enablewormholes));
         enablestargates = (config.getBoolean("CaptureThePortal.enablestargatesupport", enablestargates));
         enablefactions = (config.getBoolean("CaptureThePortal.enablefactionsupport", enablefactions));
+        enablepermissions = (config.getBoolean("CaptureThePortal.enablepermissionssupport", enablepermissions));
         enabletowny = (config.getBoolean("CaptureThePortal.enabletownysupport", enabletowny));
         enablesimpleclans = (config.getBoolean("CaptureThePortal.enablesimpleclanssupport", enablesimpleclans));
         enablegods = (config.getBoolean("CaptureThePortal.enablegodssupport", enablegods));
@@ -299,7 +300,7 @@ public class CaptureThePortal extends JavaPlugin {
         if(!getMessage("capture_message").equals("")) {
             String team = "";
             ChatColor chat;
-            team = groupPlugin.getGroupByPlayer(player);
+            team = getTeamOfPlayer(player);
             if(enablepermissions)            
                 chat = groupPlugin.getGroupColor(player);
             else
@@ -361,12 +362,15 @@ public class CaptureThePortal extends JavaPlugin {
                     checkBlock = player.getWorld().getBlockAt((int)(player.getLocation().getX() + x), (int)(player.getLocation().getY() + y), (int)(player.getLocation().getZ() + z));                    
                     if(checkBlock.getType() == Material.STONE_PLATE) {
                         
-                        if(!Storage.getCapture(checkBlock.getLocation()).equals(getTeamOfPlayer(player))                            
-                            && !groupPlugin.isAllied(player, Storage.getCapture(checkBlock.getLocation())))
-                            return 0;
-                        
                         if(Storage.getCapture(checkBlock.getLocation()).equals(""))
                             return 1;
+                        
+                        if(!Storage.getCapture(checkBlock.getLocation()).equals(getTeamOfPlayer(player))
+                            && !groupPlugin.isAllied(player, Storage.getCapture(checkBlock.getLocation()))
+                            && !getTeamOfPlayer(player).equals(""))
+                            return 0;
+                        
+                        
                     }
                 }
             }
