@@ -5,7 +5,9 @@ CaptureThePortal:
     cooldown_message_timeleft: 20
     cooldown_message_timeleft_increments: 0    
     fullgroupnames: false
+    usenations: false
     persistcapture: true
+    allow_neutral_to_portal: false
     enableEndersupport: false    
     enablewormholesupport: false
     enablestargatesupport: false
@@ -26,3 +28,4 @@ CaptureThePortal:
       player_forced_respawn: 'Another team captured the portal! You are now forced to respawn!'
       player_captured_it: 'Succesfully captured the portal!'
       player_failed_capture: 'Failed to capture the Portal because you moved.'
+      player_not_allowed_to_use_neutral: 'You are not allowed to use this Portal because you are not part of a team!'

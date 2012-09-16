@@ -14,7 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.Location;
 import org.bukkit.ChatColor;
-import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.Bukkit;
@@ -22,8 +21,6 @@ import org.bukkit.Bukkit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 import org.wargamer2010.capturetheportal.Utils.portalUtil;
@@ -34,6 +31,7 @@ public class CaptureThePortal extends JavaPlugin {
     private int capturedelay = 60;                                                              // How long it takes in deciseconds (1/10th of a second)
     private int cooldown_time = 1200;                                                           // How long the cooldown is before a Portal can be recaptured in deciseconds    
     private static Boolean fullgroupnames = false;                                                     // Whether or not to use the full group name where possible
+    private static Boolean usenations = false;                                                     // Whether or not to use Nations in stead of Towns for Towny
     private int cooldown_message_timeleft_increments = 0;                                       // How much time passes before the cooldown_message is printed, thus it's printer every x increments (0 is disabled)
     private int cooldown_message_timeleft = 20;                                                 // The amount of cooldowntime that is left before the cooldown_message is printed    
     private int squareSize = 5;                                                                 // The size of each side of the square + 1
@@ -47,6 +45,7 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean enablesimpleclans = false;                                                  // Enables simpleclans support
     private boolean enablegods = false;                                                  // Enables gods support
     private boolean enablepermissions = false;                                                  // Enables permissions support    
+    private boolean allowneutraltoportal = false;                                                  // Whether to allow Neutral players to use the portal
     
     private static HashMap<String, Boolean> supportedHooks;
     private static HashMap<Location, PortalCooldown> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
@@ -200,6 +199,7 @@ public class CaptureThePortal extends JavaPlugin {
         cooldown_message_timeleft = (config.getInt("CaptureThePortal.cooldown_message_timeleft", 0)*10);
         cooldown_message_timeleft_increments = config.getInt("CaptureThePortal.cooldown_message_timeleft_increments", 0);        
         fullgroupnames = (config.getBoolean("CaptureThePortal.fullgroupnames", fullgroupnames));
+        usenations = (config.getBoolean("CaptureThePortal.usenations", usenations));
         dieorbounce = (config.getBoolean("CaptureThePortal.dieorbounce", dieorbounce));
         persistcapture = (config.getBoolean("CaptureThePortal.persistcapture", persistcapture));        
         enablewormholes = (config.getBoolean("CaptureThePortal.enablewormholesupport", enablewormholes));
@@ -210,7 +210,9 @@ public class CaptureThePortal extends JavaPlugin {
         enablesimpleclans = (config.getBoolean("CaptureThePortal.enablesimpleclanssupport", enablesimpleclans));
         enablegods = (config.getBoolean("CaptureThePortal.enablegodssupport", enablegods));
         enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
-        
+        enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
+        allowneutraltoportal = (config.getBoolean("CaptureThePortal.allow_neutral_to_portal", allowneutraltoportal));
+                
         log("Configuration loaded succesfully", Level.INFO);
         this.saveConfig();
     }
@@ -362,20 +364,22 @@ public class CaptureThePortal extends JavaPlugin {
                     checkBlock = player.getWorld().getBlockAt((int)(player.getLocation().getX() + x), (int)(player.getLocation().getY() + y), (int)(player.getLocation().getZ() + z));                    
                     if(checkBlock.getType() == Material.STONE_PLATE) {
                         
-                        if(Storage.getCapture(checkBlock.getLocation()).equals(""))
+                        if(!allowneutraltoportal && getTeamOfPlayer(player).equals(""))
                             return 1;
                         
-                        if(!Storage.getCapture(checkBlock.getLocation()).equals(getTeamOfPlayer(player))
-                            && !groupPlugin.isAllied(player, Storage.getCapture(checkBlock.getLocation()))
-                            && !getTeamOfPlayer(player).equals(""))
-                            return 0;
+                        if(Storage.getCapture(checkBlock.getLocation()).equals(""))
+                            return 2;
+                        
+                        if((!Storage.getCapture(checkBlock.getLocation()).equals(getTeamOfPlayer(player))
+                            && !groupPlugin.isAllied(player, Storage.getCapture(checkBlock.getLocation()))))
+                            return 3;
                         
                         
                     }
                 }
             }
         }
-        return 2;
+        return 0;
     }
     
     public Boolean isAllied(Player Player, String sOtherPlayer) {
@@ -412,5 +416,9 @@ public class CaptureThePortal extends JavaPlugin {
     
     public static Boolean getFullgroupnames() {
         return fullgroupnames;
+    }
+    
+    public static Boolean getUseNations() {
+        return usenations;
     }
 }

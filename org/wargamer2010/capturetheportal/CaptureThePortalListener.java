@@ -88,14 +88,19 @@ public class CaptureThePortalListener implements Listener {
             Block block = event.getTo().getBlock();
             int isAllowed = capture.isAllowedToPortal(block, player, touchingMaterial);
             
-            if(touchingPortal && isAllowed != 2) {
+            if(touchingPortal && isAllowed != 0) {
                 int delta = 1;
-                if(!capture.getDieFromUncapturedPortal())
-                    Util.sendMessagePlayer(capture.getMessage("player_not_allowed_to_use"), player);
-                else {
-                    Util.sendMessagePlayer(capture.getMessage("player_not_allowed_die_use"), player);
-                    player.damage(1000);
-                    delta = 3;
+                
+                if(isAllowed == 2 || isAllowed == 3) {
+                    if(!capture.getDieFromUncapturedPortal())
+                        Util.sendMessagePlayer(capture.getMessage("player_not_allowed_to_use"), player);
+                    else {
+                        Util.sendMessagePlayer(capture.getMessage("player_not_allowed_die_use"), player);
+                        player.damage(1000);
+                        delta = 3;
+                    }
+                } else {
+                    Util.sendMessagePlayer(capture.getMessage("player_not_allowed_to_use_neutral"), player);
                 }
                 
                 Location loc = event.getTo();
