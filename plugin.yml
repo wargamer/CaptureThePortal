@@ -1,10 +1,14 @@
 name: CaptureThePortal
 main: org.wargamer2010.capturetheportal.CaptureThePortal
-version: 1.9.7
+version: 2.0
+dev-url: http://dev.bukkit.org/server-mods/capturetheportal
 author: Wargamer2010
 softdepend: [Vault, Multiverse-Core, PermissionsEx, SimpleClans, Towny, Gods, Factions]
 description: "Capture the Portal by holding the wool square"             
 commands:
   capturetheportal:
     description: Admin commands for CaptureThePortal
-    usage: /capturetheportal [reload]
+    usage: /capturetheportal [reload|info]
+  ctp:
+    description: Admin commands for CaptureThePortal
+    usage: /ctp [reload|info]
