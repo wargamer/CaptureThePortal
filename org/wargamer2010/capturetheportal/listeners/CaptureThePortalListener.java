@@ -18,12 +18,12 @@ import org.bukkit.util.Vector;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
 
 public class CaptureThePortalListener implements Listener {
-    CaptureThePortal capture;
+    private CaptureThePortal capture;
 
     public CaptureThePortalListener() {
         capture = CaptureThePortal.instance;
     }
-    
+
     private Material isPortalMaterial(Block checkthis) {
         if(checkthis.getType() == Material.PORTAL)
             return Material.PORTAL;
@@ -33,9 +33,9 @@ public class CaptureThePortalListener implements Listener {
             return Material.STATIONARY_WATER;
         return null;
     }
-    
+
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerInteract(final PlayerInteractEvent event) {        
+    public void onPlayerInteract(final PlayerInteractEvent event) {
         if(event.isCancelled())
             return;
         if(event.getAction() == Action.PHYSICAL && event.getClickedBlock() != null && event.getClickedBlock().getType() == Material.STONE_PLATE)
@@ -49,28 +49,29 @@ public class CaptureThePortalListener implements Listener {
             // getVelocity() is buggy, shows movement on the Y axis when the player's moving in a X/Z direction
             Vector velocity = new Vector(
                     (event.getTo().getX() - event.getFrom().getX()),
-                    (event.getTo().getY() - event.getFrom().getY()), 
+                    (event.getTo().getY() - event.getFrom().getY()),
                     (event.getTo().getZ() - event.getFrom().getZ()));
             if(velocity.getZ() == 0.0d && velocity.getX() == 0.0d && velocity.getY() == 0.0d)
-                return;            
+                return;
 
             boolean touchingPortal = false;
-            Material touchingMaterial = null;
-            
-            if((touchingMaterial = isPortalMaterial(event.getTo().getBlock())) != null)            
+            Material touchingMaterial = isPortalMaterial(event.getTo().getBlock());
+
+            if(touchingMaterial != null)
                 touchingPortal = true;
             else {
                 Location getTo = new Location(player.getWorld(), event.getFrom().getX(), event.getFrom().getY(), event.getFrom().getZ());
                 double radius = 0.8;
                 double precision = 0.3;
-                
+
                 for(double x = -radius; x <= radius && touchingMaterial == null; x += precision) {
                     for(double z = -radius; z <= radius && touchingMaterial == null; z += precision) {
-                        for(double y = -radius; y <= radius && touchingMaterial == null; y += precision) {                            
+                        for(double y = -radius; y <= radius && touchingMaterial == null; y += precision) {
                             getTo.setX(event.getFrom().getX());
                             getTo.setY(event.getFrom().getY());
                             getTo.setZ(event.getFrom().getZ());
-                            if((touchingMaterial = isPortalMaterial(getTo.add(x, y, z).getBlock())) != null) {
+                            touchingMaterial = isPortalMaterial(getTo.add(x, y, z).getBlock());
+                            if(touchingMaterial != null) {
                                 touchingPortal = true;
                                 break;
                             }
@@ -78,45 +79,43 @@ public class CaptureThePortalListener implements Listener {
                     }
                 }
             }
-            
+
             if(!touchingPortal)
                 return;
-            
+
             Block block = event.getTo().getBlock();
-            int isAllowed = capture.isAllowedToPortal(block, player, touchingMaterial);            
-            
+            int isAllowed = capture.isAllowedToPortal(block, player, touchingMaterial);
+
             if(touchingPortal && isAllowed != 0)
-                Util.bouncePlayer(isAllowed, player, event.getTo(), velocity);            
+                Util.bouncePlayer(isAllowed, player, event.getTo(), velocity);
         }
-    } 
-    
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerPortal(final PlayerPortalEvent event) {
         if(event.isCancelled())
             return;
         Player player = event.getPlayer();
         Location from = event.getFrom();
-        int isAllowed = capture.isAllowedToPortal(from.getBlock(), player, from.getBlock().getType());            
+        int isAllowed = capture.isAllowedToPortal(from.getBlock(), player, from.getBlock().getType());
         if(isAllowed != 0) {
             Util.sendNotAllowedMessage(player, isAllowed);
             event.setCancelled(true);
-            return;
-        }
-        else if(event.getPlayer() != null && event.getFrom() != null && event.getTo() != null) {
-            if(event.getTo().getWorld().getEnvironment() != Environment.NETHER || from.getWorld().getEnvironment() != Environment.NORMAL || event.isCancelled())
-                return;            
+        } else if(event.getPlayer() != null && event.getFrom() != null && event.getTo() != null) {
+            if(event.getTo().getWorld().getEnvironment() != Environment.NETHER && event.getTo().getWorld().getEnvironment() != Environment.THE_END)
+                return;
             // Admins shouldn't force a respawn
-            if(capture.getTeamOfPlayer(player).equals(""))
+            if(capture.getTeamOfPlayer(player).isEmpty())
                 return;
             Player[] online = player.getServer().getOnlinePlayers();
             for (int i = 0; i < online.length; ++i) {
                 Player p = online[i];
                 if(p == null)
                     continue;
-                if(p.getWorld().getEnvironment() == event.getTo().getWorld().getEnvironment() 
+                if(p.getWorld().getEnvironment() == event.getTo().getWorld().getEnvironment()
                         && !capture.getTeamOfPlayer(player).equals(capture.getTeamOfPlayer(p))
                         && !capture.isAllied(player, p.getName())) {
-                    Util.sendMessagePlayer(CaptureThePortal.getMessage("player_forced_respawn"), p);                    
+                    Util.sendMessagePlayer(CaptureThePortal.getMessage("player_forced_respawn"), p);
                     p.teleport(player.getWorld().getSpawnLocation());
                 }
             }
