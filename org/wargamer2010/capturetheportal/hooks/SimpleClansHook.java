@@ -9,40 +9,40 @@ import org.wargamer2010.capturetheportal.CaptureThePortal;
 import org.wargamer2010.capturetheportal.Utils.Util;
 
 public class SimpleClansHook implements Hook {
-    SimpleClans instance = null;
-    
+    private SimpleClans instance = null;
+
     public void setPlugin(Plugin pl) {
         instance = (SimpleClans)pl;
     }
-    
+
     public String getName() {
         return "SimpleClans";
     }
-    
+
     public String getGroupType() {
         return "Clan";
     }
-    
+
     public ChatColor getGroupColor(Player player) {
         Clan CP = instance.getClanManager().getClanByPlayerName(player.getName());
         if(CP == null)
             return null;
         if(CP.getTagLabel().length() < 3)
-            return null;            
+            return null;
         return Util.getColorFromString(CP.getTagLabel(), 3);
     }
-    
+
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         if(instance == null)
             return false;
-        Clan CP = instance.getClanManager().getClanByPlayerName(CapturingPlayer.getName());        
+        Clan CP = instance.getClanManager().getClanByPlayerName(CapturingPlayer.getName());
         if(CP == null)
             return false;
         if(CP.getTagLabel().equals(tag) || CP.getName().equals(tag))
             return true;
         return CP.isAlly(tag);
     }
-    
+
     public String getGroupByPlayer(Player player) {
         if(instance == null)
             return "";
