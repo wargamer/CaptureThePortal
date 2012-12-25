@@ -21,7 +21,7 @@ public class CaptureThePortalListener implements Listener {
     private CaptureThePortal capture;
 
     public CaptureThePortalListener() {
-        capture = CaptureThePortal.instance;
+        capture = CaptureThePortal.get();
     }
 
     private Material isPortalMaterial(Block checkthis) {

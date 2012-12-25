@@ -12,17 +12,17 @@ public class PortalCooldown implements Runnable {
     private Block button;
     private int cooldown_left;
     private String group;
-    private String type;    
-    private int decremented;    
+    private String type;
+    private int decremented;
     private Player capturer;
 
     public PortalCooldown(CaptureThePortal CTP, Block block, int time, String g, String t, int pDecremented, Player pCapturer) {
         cooldown_left = time;
-        group = g;        
+        group = g;
         plugin = CTP;
         button = block;
         type = t;
-        decremented = pDecremented;        
+        decremented = pDecremented;
         capturer = pCapturer;
     }
 
@@ -40,20 +40,20 @@ public class PortalCooldown implements Runnable {
 
     @Override
     public void run() {
-        cooldown_left -= 10;
-        decremented += 1;               
+        cooldown_left -= 1;
+        decremented += 1;
         if(cooldown_left != 0) {
-            if(type.equals("cooldown") && cooldown_left == CaptureThePortal.getCoolMessageTime())                
-                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left/10)+ChatColor.GREEN)));
+            if(type.equals("cooldown") && cooldown_left == CaptureThePortal.getCoolMessageTime())
+                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left)+ChatColor.GREEN)));
             else if(type.equals("cooldown") && decremented == CaptureThePortal.getCooldownInterval()) {
-                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left/10)+ChatColor.GREEN)));
+                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left)+ChatColor.GREEN)));
                 decremented = 0;
             }
             PortalCooldown pc = new PortalCooldown(plugin, button, cooldown_left, group, type, decremented, capturer);
             plugin.addTimer(button.getLocation(), pc);
             if(type.equals("cooldown"))
-                plugin.addCaptureLocation(button, group, (cooldown_left/10));
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, pc, 10);
+                plugin.addCaptureLocation(button, group, (cooldown_left));
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, pc, Util.getTicksFromSeconds(1));
         } else if(type.equals("cooldown")) {
             plugin.addCaptureLocation(button, group, 0);
             Util.broadcastMessage(CaptureThePortal.getMessage("available_message").replace("[location]", Util.locToPrintableString(button.getLocation())));

@@ -7,11 +7,15 @@ import org.bukkit.block.Block;
 import com.onarandombox.MultiversePortals.MultiversePortals;
 
 public class multiverseUtil {
-    protected static boolean multiversePortalNear(int radius, Block origin) {        
+    private multiverseUtil() {
+        
+    }
+
+    protected static boolean multiversePortalNear(int radius, Block origin) {
         Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Portals");
         if(plugin == null)
             return false;
-        MultiversePortals portal = (MultiversePortals)plugin;             
+        MultiversePortals portal = (MultiversePortals)plugin;
         for(int x = -radius; x <= radius; x++) {
             for(int z = -radius; z <= radius; z++) {
                 for(int y = -radius; y <= radius; y++) {

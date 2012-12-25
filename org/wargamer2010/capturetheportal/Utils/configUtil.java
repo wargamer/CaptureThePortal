@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class configUtil {
+    private configUtil() {
+        
+    }
+
     public static HashMap<String,HashMap<String,String>> fetchHasmapInHashmap(String path, FileConfiguration config) {
         HashMap<String,HashMap<String,String>> tempHasinHash = new HashMap<String,HashMap<String,String>>();
         try {
@@ -16,11 +20,11 @@ public class configUtil {
                 MemorySection memsec = (MemorySection)entry.getValue();
                 HashMap<String,String> tempmap = new HashMap<String, String>();
                 for(Map.Entry<String, Object> subentry : memsec.getValues(false).entrySet())
-                    tempmap.put(subentry.getKey(), (String)subentry.getValue());                
+                    tempmap.put(subentry.getKey(), (String)subentry.getValue());
                 tempHasinHash.put(entry.getKey(), tempmap);
             }
         } catch(ClassCastException ex) {
-            
+
         }
         return tempHasinHash;
     }

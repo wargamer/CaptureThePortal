@@ -45,7 +45,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.UUID;
-import java.util.logging.Level;
 
 public class MetricsLite {
 

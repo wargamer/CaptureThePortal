@@ -11,22 +11,22 @@ import org.wargamer2010.capturetheportal.CaptureThePortal;
 import org.wargamer2010.capturetheportal.Utils.Util;
 
 public class MultiversePortalListener implements Listener {
-    CaptureThePortal capture;
+    private CaptureThePortal capture;
 
     public MultiversePortalListener() {
-        capture = CaptureThePortal.instance;
+        capture = CaptureThePortal.get();
     }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void MVPortalListener(MVPortalEvent event) {
         if(event.isCancelled())
             return;
         Block block = event.getFrom().getBlock();
         Player player = event.getTeleportee();
-        int isAllowed = capture.isAllowedToPortal(block, player, Material.AIR);        
+        int isAllowed = capture.isAllowedToPortal(block, player, Material.AIR);
         if(isAllowed != 0) {
             Util.sendNotAllowedMessage(player, isAllowed);
             event.setCancelled(true);
-        }        
+        }
     }
 }

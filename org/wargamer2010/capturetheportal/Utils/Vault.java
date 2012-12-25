@@ -1,6 +1,5 @@
 package org.wargamer2010.capturetheportal.Utils;
 
-import java.util.logging.Level;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import net.milkbowl.vault.chat.Chat;
@@ -18,9 +17,9 @@ public class Vault {
     public Vault() {
         server = Bukkit.getServer();
         if(server.getPluginManager().isPluginEnabled("Vault"))
-            vaultFound = true;        
+            vaultFound = true;
     }
-    
+
     public Boolean setupPermissions()
     {
         if(!vaultFound)
@@ -28,7 +27,7 @@ public class Vault {
         RegisteredServiceProvider<Permission> permissionProvider = server.getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
         if (permissionProvider != null) {
             permission = permissionProvider.getProvider();
-        }        
+        }
         return (permission != null);
     }
 

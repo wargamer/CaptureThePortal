@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -28,12 +29,12 @@ import org.wargamer2010.capturetheportal.metrics.setupMetrics;
 import org.wargamer2010.capturetheportal.timers.*;
 
 public class CaptureThePortal extends JavaPlugin {
-    private int capturedelay = 60;                                                              // How long it takes in deciseconds (1/10th of a second)
-    private int cooldown_time = 1200;                                                           // How long the cooldown is before a Portal can be recaptured in deciseconds    
+    private int capturedelay = 6;                                                              // How long it takes in seconds
+    private int cooldown_time = 120;                                                           // How long the cooldown is before a Portal can be recaptured in seconds
     private static Boolean fullgroupnames = false;                                                     // Whether or not to use the full group name where possible
     private static Boolean usenations = false;                                                     // Whether or not to use Nations in stead of Towns for Towny
     private static int cooldown_message_timeleft_increments = 0;                                       // How much time passes before the cooldown_message is printed, thus it's printer every x increments (0 is disabled)
-    private static int cooldown_message_timeleft = 20;                                                 // The amount of cooldowntime that is left before the cooldown_message is printed    
+    private static int cooldown_message_timeleft = 20;                                                 // The amount of cooldowntime that is left before the cooldown_message is printed in seconds
     private int squareSize = 5;                                                                 // The size of each side of the square + 1
     private boolean persistcapture = true;                                                      // Whether or not to store and load captured points
     private static boolean dieorbounce = false;                                                        // Whether the player that attempts to use an uncaptured portal dies (true) or bounces off (false)
@@ -42,20 +43,20 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean enablemvportals = false;                                                    // Whether or not MVPortals should be supported together with regular nether portals
     private boolean enablestargates = false;                                                    // Whether or not Stargates should be supported together with regular nether portals
     private boolean enablefactions = false;                                                     // Enables factions and disables default way of creating teams (via Permissions)
-    private static boolean enable_ender = false;                                                       // Support for Ender portals, is disabled by default    
+    private static boolean enable_ender = false;                                                       // Support for Ender portals, is disabled by default
     private boolean enabletowny = false;                                                        // Enables towny support
     private boolean enablesimpleclans = false;                                                  // Enables simpleclans support
     private boolean enablegods = false;                                                  // Enables gods support
-    private boolean enablepermissions = false;                                                  // Enables permissions support    
+    private boolean enablepermissions = false;                                                  // Enables permissions support
     private boolean allowneutraltoportal = false;                                                  // Whether to allow Neutral players to use the portal
-    
+
     private static HashMap<String, Boolean> supportedHooks;
     private static HashMap<Location, PortalCooldown> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
-    public static Map<String, Integer> Colors;                                                  // Stores all the Permissions with their respective color codes        
-    public static CapturesStorage Storage;
-    
-    public static CaptureThePortal instance;
-    
+    private static Map<String, Integer> Colors;                                                  // Stores all the Permissions with their respective color codes
+    private static CapturesStorage Storage;
+
+    private static CaptureThePortal instance;
+
     private static final Logger logger = Logger.getLogger("Minecraft");
     private static final String pluginName = "CaptureThePortal";
     private Hook groupPlugin;
@@ -71,12 +72,12 @@ public class CaptureThePortal extends JavaPlugin {
                 for (Location key : Storage.getAllCaptures().keySet()) {
                     Block center = key.getWorld().getBlockAt(key);
                     Block woolCenter = key.getWorld().getBlockAt(center.getX(), (center.getY()-1), center.getZ());
-                    this.colorSquare(woolCenter, key.getWorld(), 0);                
+                    this.colorSquare(woolCenter, key.getWorld(), 0);
                 }
             Storage.clear();
         }
         log("Disabled", Level.INFO);
-        
+
     }
 
     @Override
@@ -84,9 +85,9 @@ public class CaptureThePortal extends JavaPlugin {
     {
         instance = this;
         PluginManager pm = getServer().getPluginManager();
-        initConfig();   
+        initConfig();
         initAllowedHooks();
-        
+
         int groupplugins = 0;
         groupPlugin = null;
         for(Map.Entry<String, Boolean> supported : supportedHooks.entrySet())
@@ -95,7 +96,7 @@ public class CaptureThePortal extends JavaPlugin {
                 log(supported.getKey() + " support enabled in config but " + supported.getKey() + " plugin is not enabled!", Level.WARNING);
             else if(supported.getValue()) {
                 try {
-                    Class<Object> fc = (Class<Object>)Class.forName("org.wargamer2010.capturetheportal.hooks."+supported.getKey()+"Hook");
+                    Class<?> fc = Class.forName("org.wargamer2010.capturetheportal.hooks."+supported.getKey()+"Hook");
                     groupplugins++;
                     if(groupPlugin == null) {
                         groupPlugin = (Hook)fc.newInstance();
@@ -109,23 +110,21 @@ public class CaptureThePortal extends JavaPlugin {
                 catch(InstantiationException instex) {  }
                 catch(IllegalAccessException illex) {  }
             }
-        }    
+        }
         if(groupplugins == 0 && groupPlugin == null) {
             log("Please enable 1 Group plugin in the config.yml!", Level.SEVERE);
-            return;
         } else if(groupPlugin == null) {
             log("None of the Group plugins that were enabled in the config.yml could be found running! Please make sure you have the right one enabled in the config.yml!", Level.SEVERE);
-            return;
         } else {
             metricsSetup = new setupMetrics();
             if(metricsSetup.setup(this))
                 log("Succesfully started Metrics, see http://mcstats.org for more information.", Level.INFO);
             else
                 log("Could not start Metrics, see http://mcstats.org for more information.", Level.INFO);
-            
-            Storage = new CapturesStorage(new File(this.getDataFolder(),"capturedpoints.yml"), persistcapture);            
-            Colors = new HashMap();
-            Timers = new HashMap();
+
+            Storage = new CapturesStorage(new File(this.getDataFolder(),"capturedpoints.yml"), persistcapture);
+            Colors = new HashMap<String, Integer>();
+            Timers = new HashMap<Location, PortalCooldown>();
             initColors();
             if(persistcapture)
                 spinCooldowns();
@@ -137,10 +136,10 @@ public class CaptureThePortal extends JavaPlugin {
             log("Enabled with " + groupPlugin.getName() + " support", Level.INFO);
         }
     }
-    
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String args[]) {
-        String commandName = cmd.getName().toLowerCase();        
+        String commandName = cmd.getName().toLowerCase();
         if(!commandName.equalsIgnoreCase("capturetheportal") && !commandName.equalsIgnoreCase("ctp"))
             return true;
         if(args.length != 1)
@@ -157,33 +156,45 @@ public class CaptureThePortal extends JavaPlugin {
                 Util.sendMessagePlayer(getMessage("Reloaded"), ((Player)sender));
         } else if(args[0].equals("info")) {
             PluginDescriptionFile pdfFile = this.getDescription();
-            String message = "\nVersion: " + pdfFile.getVersion() + 
+            String message = "\nVersion: " + pdfFile.getVersion() +
                                 "\n" + "Author: " + pdfFile.getAuthors().toString().replace("[", "").replace("]", "") +
                                 "\nHome: http://dev.bukkit.org/server-mods/capturetheportal/ \n";
             if((sender instanceof Player))
-                Util.sendMessagePlayer(getMessage(message), ((Player)sender));                
+                Util.sendMessagePlayer(getMessage(message), ((Player)sender));
             else
                 log(message, Level.INFO);
         } else
             return false;
-        
+
         return true;
     }
-    
+
+    public static CaptureThePortal get() {
+        return instance;
+    }
+
+    public static CapturesStorage getStorage() {
+        return Storage;
+    }
+
+    public static Map<String, Integer> getColors() {
+        return Collections.unmodifiableMap(Colors);
+    }
+
     public void spinCooldowns() {
         PortalCooldown pc;
-        for (Map.Entry<Location, CapturesStorage.CaptureInformation> entry : Storage.getAllCaptures().entrySet()) {                     
-            if(entry.getValue().cooldownleft > 0) {
+        for (Map.Entry<Location, CaptureInformation> entry : Storage.getAllCaptures().entrySet()) {
+            if(entry.getValue().getCooldownleft() > 0) {
                 int decremented = 0;
-                if(cooldown_message_timeleft_increments > 0 && entry.getValue().cooldownleft > cooldown_message_timeleft_increments)
-                    decremented = (cooldown_message_timeleft_increments - (entry.getValue().cooldownleft % cooldown_message_timeleft_increments));
-                pc = new PortalCooldown(this, entry.getKey().getBlock(), (entry.getValue().cooldownleft*10), entry.getValue().group, "cooldown", decremented, null);
+                if(cooldown_message_timeleft_increments > 0 && entry.getValue().getCooldownleft() > cooldown_message_timeleft_increments)
+                    decremented = (cooldown_message_timeleft_increments - (entry.getValue().getCooldownleft() % cooldown_message_timeleft_increments));
+                pc = new PortalCooldown(this, entry.getKey().getBlock(), entry.getValue().getCooldownleft(), entry.getValue().getGroup(), "cooldown", decremented, null);
                 addTimer(entry.getKey().getBlock().getLocation(), pc);
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, pc, 10);
+                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, pc, Util.getTicksFromSeconds(1));
             }
         }
     }
-    
+
     public void initAllowedHooks() {
         supportedHooks = new HashMap<String, Boolean>();
         supportedHooks.put("Factions", enablefactions);
@@ -192,24 +203,24 @@ public class CaptureThePortal extends JavaPlugin {
         supportedHooks.put("Gods", enablegods);
         supportedHooks.put("Vault", enablepermissions);
     }
-    
-    public String getGroupType() {        
-        return groupPlugin.getGroupType();        
+
+    public String getGroupType() {
+        return groupPlugin.getGroupType();
     }
-    
+
     public void log(String message, Level lvl) {
         PluginDescriptionFile pdfFile = this.getDescription();
         logger.log(lvl, ("["+pdfFile.getName()+" v"+pdfFile.getVersion()+"] " + message));
     }
-    
-    public static void Log(String message, Level lvl) {        
+
+    public static void Log(String message, Level lvl) {
         logger.log(lvl, ("["+pluginName+"] " + message));
     }
-    
+
     public static String getMessage(String message) {
         return (ChatColor.DARK_AQUA + "[CTP]: " + ChatColor.WHITE + CaptureThePortal.instance.getConfig().getString(("CaptureThePortal.messages." + message), message));
     }
-    
+
     private void initConfig() {
         this.reloadConfig();
         FileConfiguration config = this.getConfig();
@@ -217,15 +228,15 @@ public class CaptureThePortal extends JavaPlugin {
         if(!configFile.exists())
             this.saveDefaultConfig();
         config.options().copyDefaults(true);
-        capturedelay = (config.getInt("CaptureThePortal.delay", 0)*10);         // Convert to deciseconds
-        cooldown_time = (config.getInt("CaptureThePortal.cooldown", 0)*10);        
-        cooldown_message_timeleft = (config.getInt("CaptureThePortal.cooldown_message_timeleft", 0)*10);
-        cooldown_message_timeleft_increments = config.getInt("CaptureThePortal.cooldown_message_timeleft_increments", 0);        
+        capturedelay = (config.getInt("CaptureThePortal.delay", 0));
+        cooldown_time = (config.getInt("CaptureThePortal.cooldown", 0));
+        cooldown_message_timeleft = (config.getInt("CaptureThePortal.cooldown_message_timeleft", 0));
+        cooldown_message_timeleft_increments = config.getInt("CaptureThePortal.cooldown_message_timeleft_increments", 0);
         fullgroupnames = (config.getBoolean("CaptureThePortal.fullgroupnames", fullgroupnames));
         usenations = (config.getBoolean("CaptureThePortal.usenations", usenations));
         dieorbounce = (config.getBoolean("CaptureThePortal.dieorbounce", dieorbounce));
         enablebouncing = (config.getBoolean("CaptureThePortal.enablebouncing", enablebouncing));
-        persistcapture = (config.getBoolean("CaptureThePortal.persistcapture", persistcapture));        
+        persistcapture = (config.getBoolean("CaptureThePortal.persistcapture", persistcapture));
         enablewormholes = (config.getBoolean("CaptureThePortal.enablewormholesupport", enablewormholes));
         enablestargates = (config.getBoolean("CaptureThePortal.enablestargatesupport", enablestargates));
         enablefactions = (config.getBoolean("CaptureThePortal.enablefactionsupport", enablefactions));
@@ -236,8 +247,8 @@ public class CaptureThePortal extends JavaPlugin {
         enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
         enablemvportals = (config.getBoolean("CaptureThePortal.enableMVPortals", enablemvportals));
         allowneutraltoportal = (config.getBoolean("CaptureThePortal.allow_neutral_to_portal", allowneutraltoportal));
-        
-                
+
+
         log("Configuration loaded succesfully", Level.INFO);
         this.saveConfig();
     }
@@ -269,32 +280,32 @@ public class CaptureThePortal extends JavaPlugin {
         Colors.put("dark_gray", 7);
         Colors.put("gray", 8);
         Colors.put("dark_purple", 10);
-        Colors.put("dark_blue", 11);        
+        Colors.put("dark_blue", 11);
         Colors.put("dark_green", 13);
         Colors.put("red", 14);
         Colors.put("black", 15);
-        
+
         Colors.put("default", 14);
     }
 
     private boolean checkSquare(Block block, World world) {
         boolean isWoolSquare = true;
-        
+
         for(int x = -((squareSize-1)/2); x <= ((squareSize-1)/2); x++) {
             for(int z = -((squareSize-1)/2); z <= ((squareSize-1)/2); z++) {
                 if(world.getBlockAt(block.getX() + x, block.getY(), block.getZ() + z).getType() != Material.WOOL)
                     isWoolSquare = false;
             }
         }
-        
+
         return isWoolSquare;
     }
-    
+
     public String getTeamOfPlayer(Player player) {
         return groupPlugin.getGroupByPlayer(player);
     }
-    
-    public void colorSquare(Block center, World world, int color) {        
+
+    public void colorSquare(Block center, World world, int color) {
         if(checkSquare(center, world)) {
             for(int x = -((squareSize-1)/2); x <= ((squareSize-1)/2); x++) {
                 for(int z = -((squareSize-1)/2); z <= ((squareSize-1)/2); z++) {
@@ -305,7 +316,7 @@ public class CaptureThePortal extends JavaPlugin {
         } else
             center.setData((byte)(color));
     }
-    
+
     private String validCapture(Block block, Player player) {
         String captureType = "";
         Block woolCenter = player.getWorld().getBlockAt(block.getX(), (block.getY()-1), block.getZ());
@@ -318,31 +329,30 @@ public class CaptureThePortal extends JavaPlugin {
         else if(enablemvportals && portalUtil.checkMultiversePortal(woolCenter, player.getWorld()))
             captureType = "Portal";
         else if(checkSquare(woolCenter, player.getWorld()))
-            captureType = "Nether";                        
-        if(!getTeamOfPlayer(player).equals(""))
+            captureType = "Nether";
+        if(!getTeamOfPlayer(player).isEmpty())
             if(!Storage.getCapture(block.getLocation()).equals(getTeamOfPlayer(player)))
                 return captureType;
         return "";
     }
-    
+
     private void broadcastCapture(Player player, String captureType) {
-        if(!getMessage("capture_message").equals("")) {
-            String team = "";
+        if(!getMessage("capture_message").isEmpty()) {
+            String team = getTeamOfPlayer(player);
             ChatColor chat;
-            team = getTeamOfPlayer(player);
-            if(enablepermissions)            
+            if(enablepermissions)
                 chat = groupPlugin.getGroupColor(player);
             else
                 chat = ChatColor.WHITE;
             Util.broadcastMessage(ChatColor.GREEN+getMessage("capture_message").replace("[team]", chat+team+ChatColor.GREEN).replace("[type]", captureType).replace("[group]", getGroupType()));
         }
     }
-    
+
     public boolean capturePortal(Block block, Player player) {
-        String captureType;
-        if(!(captureType = validCapture(block, player)).equals("")) {
+        String captureType = validCapture(block, player);
+        if(!captureType.isEmpty()) {
             if(Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getCooldown() > 0 && Timers.get(block.getLocation()).getType().equals("cooldown")) {
-                Util.sendMessagePlayer(getMessage("player_portal_is_cooldown").replace("[cooldown]", Util.parseTime(Timers.get(block.getLocation()).getCooldown()/10)+ "."), player);
+                Util.sendMessagePlayer(getMessage("player_portal_is_cooldown").replace("[cooldown]", Util.parseTime(Timers.get(block.getLocation()).getCooldown())+ "."), player);
                 return false;
             } else if (Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getCooldown() > 0 && Timers.get(block.getLocation()).getType().equals("delay")) {
                 if(Timers.get(block.getLocation()).getCapturer() != player)
@@ -352,18 +362,18 @@ public class CaptureThePortal extends JavaPlugin {
                 Timers.remove(block.getLocation());
             }
             broadcastCapture(player, captureType);
-            Util.sendMessagePlayer(getMessage("player_capturing_portal_holdit").replace("[capturetime]", Util.parseTime(capturedelay/10)), player);
+            Util.sendMessagePlayer(getMessage("player_capturing_portal_holdit").replace("[capturetime]", Util.parseTime(capturedelay)), player);
             getServer().getScheduler().scheduleSyncDelayedTask(this, new CapturePortal(this, player, block, cooldown_time, capturedelay, player.getLocation()), 1);
             return true;
         } else
             return false;
     }
-    
+
     public int getCapturedelay() {
         return capturedelay;
     }
 
-    public void addCaptureLocation(Block block, String group, Integer cooldownleft) {        
+    public void addCaptureLocation(Block block, String group, Integer cooldownleft) {
         Storage.setCapture(block.getLocation(), group, cooldownleft);
     }
 
@@ -375,7 +385,7 @@ public class CaptureThePortal extends JavaPlugin {
 
     public int isAllowedToPortal(Block block, Player player, Material portalMaterial) {
         Block checkBlock;
-        int xradius, yradius, zradius;        
+        int xradius, yradius, zradius;
         if(portalMaterial == Material.STATIONARY_WATER) {
             xradius = 5;
             zradius = 5;
@@ -388,67 +398,67 @@ public class CaptureThePortal extends JavaPlugin {
         for(int x = -xradius; x <= xradius; x++) {
             for(int z = -zradius; z <= zradius; z++) {
                 for(int y = -yradius; y <= yradius; y++) {
-                    checkBlock = player.getWorld().getBlockAt((int)(player.getLocation().getX() + x), (int)(player.getLocation().getY() + y), (int)(player.getLocation().getZ() + z));                    
+                    checkBlock = player.getWorld().getBlockAt((int)(player.getLocation().getX() + x), (int)(player.getLocation().getY() + y), (int)(player.getLocation().getZ() + z));
                     if(checkBlock.getType() == Material.STONE_PLATE) {
-                        
-                        if(!allowneutraltoportal && getTeamOfPlayer(player).equals(""))
+
+                        if(!allowneutraltoportal && getTeamOfPlayer(player).isEmpty())
                             return 1;
-                        
-                        if(Storage.getCapture(checkBlock.getLocation()).equals(""))
+
+                        if(Storage.getCapture(checkBlock.getLocation()).isEmpty())
                             return 2;
-                        
+
                         if((!Storage.getCapture(checkBlock.getLocation()).equals(getTeamOfPlayer(player))
                             && !groupPlugin.isAllied(player, Storage.getCapture(checkBlock.getLocation()))))
                             return 3;
-                        
-                        
+
+
                     }
                 }
             }
         }
         return 0;
     }
-    
+
     public Boolean isAllied(Player Player, String sOtherPlayer) {
         return groupPlugin.isAllied(Player, sOtherPlayer);
     }
 
     public int getColor(Player player) {
-        ChatColor color = groupPlugin.getGroupColor(player);        
+        ChatColor color = groupPlugin.getGroupColor(player);
         if(color == null || !Colors.containsKey(color.name().toLowerCase()))
             return Colors.get("default");
         else
             return Colors.get(color.name().toLowerCase());
     }
-    
+
     public static boolean getDieFromUncapturedPortal() {
         return dieorbounce;
     }
-    
+
     public static boolean getWormholeSupport() {
         return enablewormholes;
     }
-    
+
     public static boolean getEnderSupport() {
         return enable_ender;
     }
-    
+
     public static int getCooldownInterval() {
         return cooldown_message_timeleft_increments;
     }
-    
+
     public static int getCoolMessageTime() {
         return cooldown_message_timeleft;
     }
-    
+
     public static Boolean getFullgroupnames() {
         return fullgroupnames;
     }
-    
+
     public static Boolean getUseNations() {
         return usenations;
     }
-    
+
     public static Boolean getEnablebouncing() {
         return enablebouncing;
     }

@@ -14,56 +14,56 @@ import org.bukkit.ChatColor;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
 
 public class TownyHook implements Hook {
-    Towny instance = null;
-    
+    private Towny instance = null;
+
     public void setPlugin(Plugin pl) {
         instance = (Towny)pl;
     }
-    
+
     public String getName() {
         return "Towny";
     }
-    
+
     public String getGroupType() {
         if(!CaptureThePortal.getUseNations())
             return "Town";
         else
             return "Nation";
     }
-    
+
     public ChatColor getGroupColor(Player player) {
         return null;
     }
-    
+
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         if(!CaptureThePortal.getUseNations()) {
-            Location spawnlocation = null;
+            Location spawnlocation;
             try {
                 spawnlocation = instance.getTownyUniverse().getTownSpawnLocation(CapturingPlayer);
             } catch(TownyException TE) {
                 return false;
             }
-            String townName = TownyUniverse.getTownName(spawnlocation);                        
+            String townName = TownyUniverse.getTownName(spawnlocation);
             return CombatUtil.isAlly(townName, tag);
         } else {
             // No point in checking whether Nations are allies. Towns in the same Nation are allies anyway
             return false;
         }
     }
-    
+
     public String getGroupByPlayer(Player player) {
-        Location spawnlocation = null;
+        Location spawnlocation;
         try {
             spawnlocation = instance.getTownyUniverse().getTownSpawnLocation(player);
         } catch(TownyException TE) {
             return "";
         }
         if(!CaptureThePortal.getUseNations()) {
-            return TownyUniverse.getTownName(spawnlocation);            
+            return TownyUniverse.getTownName(spawnlocation);
         } else {
             String town_name = TownyUniverse.getTownName(spawnlocation);
             Town town = instance.getTownyUniverse().getTownsMap().get(town_name);
-            Nation nation = null;
+            Nation nation;
             try {
                 nation = town.getNation();
                 return nation.getName();
