@@ -5,7 +5,7 @@ public class CaptureInformation {
     private String group = "";
     private int cooldownleft = 0;
 
-    CaptureInformation(String pGroup, int pCooldown) {
+    public CaptureInformation(String pGroup, int pCooldown) {
         group = pGroup;
         cooldownleft = pCooldown;
     }

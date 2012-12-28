@@ -86,6 +86,61 @@ public class Util {
         return timeString;
     }
 
+    public static int getTimeFromString(String time) {
+        return getTimeFromString(time, -1);
+    }
+
+    public static int getTimeFromString(String time, int defaultValue) {
+        timeUnit[] timeUnits = { (new timeUnit(60, "Second")), (new timeUnit(60, "Minute")), (new timeUnit(24, "Hour")), (new timeUnit(365, "Day")) };
+        char[] singleUnits = { 's', 'm', 'h', 'd' };
+        StringBuilder number = new StringBuilder(time.length());
+        StringBuilder unit = new StringBuilder(time.length());
+
+        for(char tempc : time.toLowerCase().replace(" ", "").toCharArray()) {
+            if(Character.isDigit(tempc))
+                number.append(tempc);
+            else
+                unit.append(tempc);
+        }
+
+        if(number.length() == 0)
+            return defaultValue;
+
+        char cUnit = '-';
+        if(unit.length() > 0)
+            cUnit = unit.toString().charAt(0);
+        String sNumber = number.toString();
+        Integer iNumber;
+        try {
+            iNumber = Integer.parseInt(sNumber);
+        } catch(NumberFormatException ex) {
+            return defaultValue;
+        }
+
+        if(cUnit == '-')
+            return iNumber;
+
+        boolean found = false;
+        for(int i = 0; i < singleUnits.length; i++) {
+            char timeunit = singleUnits[i];
+            if(timeunit == cUnit) {
+                timeUnits[i].setAmount(iNumber);
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+            return defaultValue;
+
+        for(int i = (timeUnits.length -1); i > 0; i--) {
+            while(timeUnits[i].singleDecrement())
+                timeUnits[i-1].fullIncrement();
+        }
+
+        return timeUnits[0].currentAmount;
+    }
+
     public static void sendMessagePlayer(String message, Player player) {
         Timestamp currentTimestamp = new Timestamp(Calendar.getInstance().getTime().getTime());
 
@@ -215,12 +270,26 @@ public class Util {
             if(currentAmount >= maxAmount) {
                 currentAmount -= maxAmount;
                 return true;
-            } else
-                return false;
+            }
+
+            return false;
+        }
+
+        Boolean singleDecrement() {
+            if(currentAmount > 0) {
+                currentAmount--;
+                return true;
+            }
+
+            return false;
         }
 
         void increment() {
             currentAmount++;
+        }
+
+        void fullIncrement() {
+            currentAmount += maxAmount;
         }
 
         String getName() {
@@ -229,6 +298,10 @@ public class Util {
 
         int getAmount() {
             return currentAmount;
+        }
+
+        void setAmount(int amount) {
+            currentAmount = amount;
         }
     }
 }

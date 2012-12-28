@@ -51,7 +51,7 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean allowneutraltoportal = false;                                                  // Whether to allow Neutral players to use the portal
 
     private static HashMap<String, Boolean> supportedHooks;
-    private static HashMap<Location, PortalCooldown> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
+    private static HashMap<Location, Timer> Timers;                                    // Stores all the timing classes (CapturePortal) for the various locations
     private static Map<String, Integer> Colors;                                                  // Stores all the Permissions with their respective color codes
     private static CapturesStorage Storage;
 
@@ -124,7 +124,7 @@ public class CaptureThePortal extends JavaPlugin {
 
             Storage = new CapturesStorage(new File(this.getDataFolder(),"capturedpoints.yml"), persistcapture);
             Colors = new HashMap<String, Integer>();
-            Timers = new HashMap<Location, PortalCooldown>();
+            Timers = new HashMap<Location, Timer>();
             initColors();
             if(persistcapture)
                 spinCooldowns();
@@ -188,7 +188,7 @@ public class CaptureThePortal extends JavaPlugin {
                 int decremented = 0;
                 if(cooldown_message_timeleft_increments > 0 && entry.getValue().getCooldownleft() > cooldown_message_timeleft_increments)
                     decremented = (cooldown_message_timeleft_increments - (entry.getValue().getCooldownleft() % cooldown_message_timeleft_increments));
-                pc = new PortalCooldown(this, entry.getKey().getBlock(), entry.getValue().getCooldownleft(), entry.getValue().getGroup(), "cooldown", decremented, null);
+                pc = new PortalCooldown(this, entry.getKey().getBlock(), entry.getValue().getCooldownleft(), entry.getValue().getGroup(), decremented, null);
                 addTimer(entry.getKey().getBlock().getLocation(), pc);
                 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, pc, Util.getTicksFromSeconds(1));
             }
@@ -228,10 +228,10 @@ public class CaptureThePortal extends JavaPlugin {
         if(!configFile.exists())
             this.saveDefaultConfig();
         config.options().copyDefaults(true);
-        capturedelay = (config.getInt("CaptureThePortal.delay", 0));
-        cooldown_time = (config.getInt("CaptureThePortal.cooldown", 0));
-        cooldown_message_timeleft = (config.getInt("CaptureThePortal.cooldown_message_timeleft", 0));
-        cooldown_message_timeleft_increments = config.getInt("CaptureThePortal.cooldown_message_timeleft_increments", 0);
+        capturedelay = Util.getTimeFromString(config.getString("CaptureThePortal.delay", ""), capturedelay);
+        cooldown_time = Util.getTimeFromString(config.getString("CaptureThePortal.cooldown", ""), cooldown_time);
+        cooldown_message_timeleft = Util.getTimeFromString(config.getString("CaptureThePortal.cooldown_message_timeleft", ""), cooldown_message_timeleft);
+        cooldown_message_timeleft_increments = Util.getTimeFromString(config.getString("CaptureThePortal.cooldown_message_timeleft_increments", ""), cooldown_message_timeleft_increments);
         fullgroupnames = (config.getBoolean("CaptureThePortal.fullgroupnames", fullgroupnames));
         usenations = (config.getBoolean("CaptureThePortal.usenations", usenations));
         dieorbounce = (config.getBoolean("CaptureThePortal.dieorbounce", dieorbounce));
@@ -351,19 +351,19 @@ public class CaptureThePortal extends JavaPlugin {
     public boolean capturePortal(Block block, Player player) {
         String captureType = validCapture(block, player);
         if(!captureType.isEmpty()) {
-            if(Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getCooldown() > 0 && Timers.get(block.getLocation()).getType().equals("cooldown")) {
-                Util.sendMessagePlayer(getMessage("player_portal_is_cooldown").replace("[cooldown]", Util.parseTime(Timers.get(block.getLocation()).getCooldown())+ "."), player);
+            if(Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getTimeLeft() > 0 && Timers.get(block.getLocation()).getType().equals("cooldown")) {
+                Util.sendMessagePlayer(getMessage("player_portal_is_cooldown").replace("[cooldown]", Util.parseTime(Timers.get(block.getLocation()).getTimeLeft())+ "."), player);
                 return false;
-            } else if (Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getCooldown() > 0 && Timers.get(block.getLocation()).getType().equals("delay")) {
+            } else if (Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getTimeLeft()> 0 && Timers.get(block.getLocation()).getType().equals("delay")) {
                 if(Timers.get(block.getLocation()).getCapturer() != player)
                     Util.sendMessagePlayer(getMessage("player_someone_else_capturing"), player);
                 return false;
-            } else if(Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getCooldown() == 0) {
+            } else if(Timers.containsKey(block.getLocation()) && Timers.get(block.getLocation()).getTimeLeft() == 0) {
                 Timers.remove(block.getLocation());
             }
             broadcastCapture(player, captureType);
             Util.sendMessagePlayer(getMessage("player_capturing_portal_holdit").replace("[capturetime]", Util.parseTime(capturedelay)), player);
-            getServer().getScheduler().scheduleSyncDelayedTask(this, new CapturePortal(this, player, block, cooldown_time, capturedelay, player.getLocation()), 1);
+            getServer().getScheduler().scheduleSyncDelayedTask(this, new CapturePortal(this, player, block, cooldown_time, capturedelay), Util.getTicksFromSeconds(1));
             return true;
         } else
             return false;
@@ -377,10 +377,15 @@ public class CaptureThePortal extends JavaPlugin {
         Storage.setCapture(block.getLocation(), group, cooldownleft);
     }
 
-    public void addTimer(Location loc, PortalCooldown pc) {
+    public void addTimer(Location loc, Timer tim) {
         if(Timers.containsKey(loc))
             Timers.remove(loc);
-        Timers.put(loc, pc);
+        Timers.put(loc, tim);
+    }
+
+    public void removeTimer(Location loc) {
+        if(Timers.containsKey(loc))
+            Timers.remove(loc);
     }
 
     public int isAllowedToPortal(Block block, Player player, Material portalMaterial) {
