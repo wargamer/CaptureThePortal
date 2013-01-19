@@ -8,14 +8,15 @@ import java.util.logging.Level;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
 import org.wargamer2010.capturetheportal.Utils.Vault;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.World;
 
 public class VaultHook implements Hook {
     private Permission instance = null;
     private String neutralPermission = "CaptureThePortal.neutral"; // The permissions that can be assigned to a group/player that is not allowed to participate
 
     public void setPlugin(Plugin pl) {
-        Vault vault = new Vault();
         if(Vault.vaultFound) {
+            Vault vault = new Vault();
             if(vault.setupPermissions()) {
                 instance = Vault.permission;
             } else {
@@ -75,5 +76,18 @@ public class VaultHook implements Hook {
         Boolean bHasIt = ((instance != null) ? instance.has(player, Permission) : false);
         if(isOP) player.setOp(true);
         return bHasIt;
+    }
+
+    public Boolean giveMoneyToPlayers(String group, World world, double amount) {
+        if(!Vault.vaultFound || Vault.economy == null)
+            return false;
+
+        for(Player player : world.getPlayers()) {
+            if(getGroupByPlayer(player, false).equals(group)) {
+                Vault.economy.depositPlayer(player.getName(), amount);
+            }
+        }
+
+        return true;
     }
 }

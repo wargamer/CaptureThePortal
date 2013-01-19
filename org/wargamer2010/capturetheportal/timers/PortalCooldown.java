@@ -54,6 +54,7 @@ public class PortalCooldown extends Timer {
             plugin.addCaptureLocation(button, group, 0);
             Util.broadcastMessage(CaptureThePortal.getMessage("available_message").replace("[location]", Util.locToPrintableString(button.getLocation())));
             plugin.removeTimer(button.getLocation());
+            plugin.rewardTeam(button, group, capturer);
         }
     }
 }

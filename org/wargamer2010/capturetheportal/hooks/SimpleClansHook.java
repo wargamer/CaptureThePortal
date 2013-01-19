@@ -2,11 +2,14 @@ package org.wargamer2010.capturetheportal.hooks;
 
 import net.sacredlabyrinth.phaed.simpleclans.SimpleClans;
 import net.sacredlabyrinth.phaed.simpleclans.Clan;
+import net.sacredlabyrinth.phaed.simpleclans.ClanPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
 import org.wargamer2010.capturetheportal.Utils.Util;
+import org.wargamer2010.capturetheportal.Utils.Vault;
 
 public class SimpleClansHook implements Hook {
     private SimpleClans instance = null;
@@ -53,5 +56,28 @@ public class SimpleClansHook implements Hook {
             return CP.getTagLabel();
         else
             return CP.getName();
+    }
+
+    public Boolean giveMoneyToPlayers(String group, World world, double amount) {
+        if(!Vault.vaultFound || Vault.economy == null)
+            return false;
+
+        Clan CP = null;
+        if(!CaptureThePortal.getFullgroupnames()) {
+            CP = instance.getClanManager().getClan(group);
+        } else {
+            for(Clan clan : instance.getClanManager().getClans()) {
+                if(clan.getName().equals(group))
+                    CP = clan;
+            }
+        }
+        if(CP == null)
+            return false;
+
+        for(ClanPlayer player : CP.getAllMembers()) {
+            Vault.economy.depositPlayer(player.getName(), amount);
+        }
+
+        return true;
     }
 }

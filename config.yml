@@ -3,13 +3,14 @@ CaptureThePortal:
     enablebouncing: true
     delay: 6
     cooldown: 120
+    rewardaftercooldown: 0
     cooldown_message_timeleft: 20
-    cooldown_message_timeleft_increments: 0    
+    cooldown_message_timeleft_increments: 0
     fullgroupnames: false
     usenations: false
     persistcapture: true
     allow_neutral_to_portal: false
-    enableEndersupport: false    
+    enableEndersupport: false
     enablewormholesupport: false
     enablestargatesupport: false
     enableMVPortals: false
@@ -22,6 +23,7 @@ CaptureThePortal:
       capture_message: '[team] [group] is attempting to capture the [type].'
       cooldown_message: 'The portal will be available for capture again within [cooldown].'
       available_message: 'The portal at [location] is now ready to be captured!'
+      reward_message: '[team] [group] has been rewarded [reward]!'
       player_portal_is_cooldown: 'This Portal is on Cooldown, total cooldown time is [cooldown]'
       player_someone_else_capturing: 'Someone else is currently capturing this portal!'
       player_capturing_portal_holdit: 'Capturing Portal! Hold it for [capturetime] to capture it!'

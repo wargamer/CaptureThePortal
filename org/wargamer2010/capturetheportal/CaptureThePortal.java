@@ -23,6 +23,7 @@ import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.wargamer2010.capturetheportal.Utils.Vault;
 import org.wargamer2010.capturetheportal.Utils.portalUtil;
 import org.wargamer2010.capturetheportal.hooks.*;
 import org.wargamer2010.capturetheportal.metrics.setupMetrics;
@@ -36,6 +37,7 @@ public class CaptureThePortal extends JavaPlugin {
     private static int cooldown_message_timeleft_increments = 0;                                       // How much time passes before the cooldown_message is printed, thus it's printer every x increments (0 is disabled)
     private static int cooldown_message_timeleft = 20;                                                 // The amount of cooldowntime that is left before the cooldown_message is printed in seconds
     private int squareSize = 5;                                                                 // The size of each side of the square + 1
+    private double rewardaftercooldown = 0;                                                     // Amount of money all members of a group should get after the cooldown is over
     private boolean persistcapture = true;                                                      // Whether or not to store and load captured points
     private static boolean dieorbounce = false;                                                        // Whether the player that attempts to use an uncaptured portal dies (true) or bounces off (false)
     private static boolean enablebouncing = true;                                               // Whether or not to bounce people from the Nether portal
@@ -65,17 +67,20 @@ public class CaptureThePortal extends JavaPlugin {
     @Override
     public void onDisable()
     {
-        if(persistcapture)
-            Storage.saveCaptures();
-        else {
-            if(Storage.getAllCaptures() != null)
-                for (Location key : Storage.getAllCaptures().keySet()) {
-                    Block center = key.getWorld().getBlockAt(key);
-                    Block woolCenter = key.getWorld().getBlockAt(center.getX(), (center.getY()-1), center.getZ());
-                    this.colorSquare(woolCenter, key.getWorld(), 0);
-                }
-            Storage.clear();
+        if(Storage != null) {
+            if(persistcapture)
+                Storage.saveCaptures();
+            else {
+                if(Storage.getAllCaptures() != null)
+                    for (Location key : Storage.getAllCaptures().keySet()) {
+                        Block center = key.getWorld().getBlockAt(key);
+                        Block woolCenter = key.getWorld().getBlockAt(center.getX(), (center.getY()-1), center.getZ());
+                        this.colorSquare(woolCenter, key.getWorld(), 0);
+                    }
+                Storage.clear();
+            }
         }
+
         log("Disabled", Level.INFO);
 
     }
@@ -87,6 +92,10 @@ public class CaptureThePortal extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         initConfig();
         initAllowedHooks();
+
+        Vault vault = new Vault();
+        if(Vault.vaultFound)
+            vault.setupEconomy();
 
         int groupplugins = 0;
         groupPlugin = null;
@@ -247,7 +256,7 @@ public class CaptureThePortal extends JavaPlugin {
         enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
         enablemvportals = (config.getBoolean("CaptureThePortal.enableMVPortals", enablemvportals));
         allowneutraltoportal = (config.getBoolean("CaptureThePortal.allow_neutral_to_portal", allowneutraltoportal));
-
+        rewardaftercooldown = (config.getDouble("CaptureThePortal.rewardaftercooldown", rewardaftercooldown));
 
         log("Configuration loaded succesfully", Level.INFO);
         this.saveConfig();
@@ -336,15 +345,23 @@ public class CaptureThePortal extends JavaPlugin {
         return "";
     }
 
+    private String getColoredTeamName(Player player) {
+        String team = getTeamOfPlayer(player);
+        ChatColor chat;
+        if(groupPlugin.getGroupColor(player) != null)
+            chat = groupPlugin.getGroupColor(player);
+        else
+            chat = ChatColor.WHITE;
+        return (chat + team);
+    }
+
     private void broadcastCapture(Player player, String captureType) {
         if(!getMessage("capture_message").isEmpty()) {
-            String team = getTeamOfPlayer(player);
-            ChatColor chat;
-            if(enablepermissions)
-                chat = groupPlugin.getGroupColor(player);
-            else
-                chat = ChatColor.WHITE;
-            Util.broadcastMessage(ChatColor.GREEN+getMessage("capture_message").replace("[team]", chat+team+ChatColor.GREEN).replace("[type]", captureType).replace("[group]", getGroupType()));
+            Util.broadcastMessage(ChatColor.GREEN
+                                    + getMessage("capture_message")
+                                        .replace("[team]", getColoredTeamName(player)+ChatColor.GREEN)
+                                        .replace("[type]", captureType)
+                                        .replace("[group]", getGroupType()));
         }
     }
 
@@ -375,6 +392,19 @@ public class CaptureThePortal extends JavaPlugin {
 
     public void addCaptureLocation(Block block, String group, Integer cooldownleft) {
         Storage.setCapture(block.getLocation(), group, cooldownleft);
+    }
+
+    public void rewardTeam(Block block, String group, Player player) {
+        if(rewardaftercooldown <= 0)
+            return;
+        if(groupPlugin.giveMoneyToPlayers(group, block.getWorld(), rewardaftercooldown)) {
+            Util.broadcastMessage(ChatColor.GREEN
+                    + getMessage("reward_message")
+                        .replace("[team]", getColoredTeamName(player) +ChatColor.GREEN)
+                        .replace("[group]", getGroupType())
+                        .replace("[reward]", Vault.economy.format(rewardaftercooldown)));
+        }
+
     }
 
     public void addTimer(Location loc, Timer tim) {
@@ -450,6 +480,10 @@ public class CaptureThePortal extends JavaPlugin {
 
     public static int getCooldownInterval() {
         return cooldown_message_timeleft_increments;
+    }
+
+    public double getRewardAmount() {
+        return rewardaftercooldown;
     }
 
     public static int getCoolMessageTime() {

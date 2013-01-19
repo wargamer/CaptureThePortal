@@ -7,25 +7,27 @@ import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.struct.Relation;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
+import org.wargamer2010.capturetheportal.Utils.Vault;
 
 public class FactionsHook implements Hook {
     public void setPlugin(Plugin pl) {
-        
+
     }
-    
+
     public String getGroupType() {
         return "Faction";
     }
-    
+
     public String getName() {
         return "Factions";
     }
-    
+
     public ChatColor getGroupColor(Player player) {
         return null;
     }
-    
+
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         FPlayer FP = FPlayers.i.get(CapturingPlayer);
         Faction capturing_faction = FP.getFaction();
@@ -38,20 +40,34 @@ public class FactionsHook implements Hook {
         if(capturing_faction.getRelationWish(captured_faction).value >= captured_faction.getRelationWish(capturing_faction).value)
             rel = captured_faction.getRelationWish(capturing_faction);
         else
-            rel = capturing_faction.getRelationWish(captured_faction);        
+            rel = capturing_faction.getRelationWish(captured_faction);
         if(rel == Relation.ALLY)
             return true;
         else
             return false;
     }
-    
+
     public String getGroupByPlayer(Player player) {
         FPlayer FP = FPlayers.i.get(player);
         Faction Fac = FP.getFaction();
-        
+
         if(Fac == null || FP.getFactionId().equals("0"))
             return "";
         else
-            return Fac.getTag();        
+            return Fac.getTag();
+    }
+
+    public Boolean giveMoneyToPlayers(String group, World world, double amount) {
+        if(!Vault.vaultFound || Vault.economy == null)
+            return false;
+        Faction fac = Factions.i.getBestIdMatch(group);
+        if(fac == null)
+            return false;
+        else {
+            for(FPlayer player : fac.getFPlayers()) {
+                Vault.economy.depositPlayer(player.getName(), amount);
+            }
+        }
+        return true;
     }
 }
