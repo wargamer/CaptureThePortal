@@ -41,13 +41,9 @@ public class TownyHook implements Hook {
 
     public Boolean isAllied(Player CapturingPlayer, String tag) {
         if(!CaptureThePortal.getUseNations()) {
-            Location spawnlocation;
-            try {
-                spawnlocation = instance.getTownyUniverse().getTownSpawnLocation(CapturingPlayer);
-            } catch(TownyException TE) {
+            String townName = getGroupByPlayer(CapturingPlayer);
+            if(townName.isEmpty())
                 return false;
-            }
-            String townName = TownyUniverse.getTownName(spawnlocation);
             return CombatUtil.isAlly(townName, tag);
         } else {
             // No point in checking whether Nations are allies. Towns in the same Nation are allies anyway
@@ -56,26 +52,19 @@ public class TownyHook implements Hook {
     }
 
     public String getGroupByPlayer(Player player) {
-        Location spawnlocation;
+        Resident res = instance.getTownyUniverse().getResidentMap().get(player.getName());
+
         try {
-            spawnlocation = instance.getTownyUniverse().getTownSpawnLocation(player);
-        } catch(TownyException TE) {
-            return "";
-        }
-        if(!CaptureThePortal.getUseNations()) {
-            return TownyUniverse.getTownName(spawnlocation);
-        } else {
-            String town_name = TownyUniverse.getTownName(spawnlocation);
-            Town town = instance.getTownyUniverse().getTownsMap().get(town_name);
-            Nation nation;
-            try {
-                if(town == null || town.getNation() == null)
-                    return "";
-                nation = town.getNation();
-                return nation.getName();
-            } catch(NotRegisteredException x) {
+            Town town = res.getTown();
+            if(town == null)
                 return "";
+            if(!CaptureThePortal.getUseNations()) {
+                return town.getName();
+            } else {
+                return (town.getNation() == null ? "" : town.getNation().getName());
             }
+        } catch(NotRegisteredException ex) {
+            return "";
         }
     }
 
