@@ -15,10 +15,10 @@ public class VaultHook implements Hook {
     private String neutralPermission = "CaptureThePortal.neutral"; // The permissions that can be assigned to a group/player that is not allowed to participate
 
     public void setPlugin(Plugin pl) {
-        if(Vault.vaultFound) {
+        if(Vault.isVaultFound()) {
             Vault vault = new Vault();
             if(vault.setupPermissions()) {
-                instance = Vault.permission;
+                instance = Vault.getPermission();
             } else {
                 CaptureThePortal.Log("Vault could not find a Permission plugin. Either load a compatible Permission plugin or choose a different Group Plugin!", Level.SEVERE);
             }
@@ -79,12 +79,12 @@ public class VaultHook implements Hook {
     }
 
     public Boolean giveMoneyToPlayers(String group, World world, double amount) {
-        if(!Vault.vaultFound || Vault.economy == null)
+        if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
 
         for(Player player : world.getPlayers()) {
             if(getGroupByPlayer(player, false).equals(group)) {
-                Vault.economy.depositPlayer(player.getName(), amount);
+                Vault.getEconomy().depositPlayer(player.getName(), amount);
             }
         }
 

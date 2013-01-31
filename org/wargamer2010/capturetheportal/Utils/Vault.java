@@ -8,10 +8,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.Server;
 
 public class Vault {
-    public static Permission permission = null;
-    public static Economy economy = null;
-    public static Chat chat = null;
-    public static Boolean vaultFound = false;
+    private static Permission permission = null;
+    private static Economy economy = null;
+    private static Chat chat = null;
+    private static Boolean vaultFound = false;
     private Server server = null;
 
     public Vault() {
@@ -53,5 +53,21 @@ public class Vault {
         }
 
         return (economy != null);
+    }
+
+    public static Permission getPermission() {
+        return permission;
+    }
+
+    public static Economy getEconomy() {
+        return economy;
+    }
+
+    public static Chat getChat() {
+        return chat;
+    }
+
+    public static Boolean isVaultFound() {
+        return vaultFound;
     }
 }

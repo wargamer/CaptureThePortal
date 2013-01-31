@@ -37,13 +37,13 @@ public class GodsHook implements Hook {
     }
 
     public Boolean giveMoneyToPlayers(String group, World world, double amount) {
-        if(!Vault.vaultFound || Vault.economy == null)
+        if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
-        
+
         if(!instance.getGodManager().getGods().contains(group))
             return false;
         for(String player : instance.getBelieverManager().getBelieversForGod(group)) {
-            Vault.economy.depositPlayer(player, amount);
+            Vault.getEconomy().depositPlayer(player, amount);
         }
         return true;
     }

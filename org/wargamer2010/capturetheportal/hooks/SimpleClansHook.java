@@ -59,7 +59,7 @@ public class SimpleClansHook implements Hook {
     }
 
     public Boolean giveMoneyToPlayers(String group, World world, double amount) {
-        if(!Vault.vaultFound || Vault.economy == null)
+        if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
 
         Clan CP = null;
@@ -75,7 +75,7 @@ public class SimpleClansHook implements Hook {
             return false;
 
         for(ClanPlayer player : CP.getAllMembers()) {
-            Vault.economy.depositPlayer(player.getName(), amount);
+            Vault.getEconomy().depositPlayer(player.getName(), amount);
         }
 
         return true;

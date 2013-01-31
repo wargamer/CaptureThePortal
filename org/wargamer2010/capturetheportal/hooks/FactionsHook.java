@@ -58,14 +58,14 @@ public class FactionsHook implements Hook {
     }
 
     public Boolean giveMoneyToPlayers(String group, World world, double amount) {
-        if(!Vault.vaultFound || Vault.economy == null)
+        if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
         Faction fac = Factions.i.getBestIdMatch(group);
         if(fac == null)
             return false;
         else {
             for(FPlayer player : fac.getFPlayers()) {
-                Vault.economy.depositPlayer(player.getName(), amount);
+                Vault.getEconomy().depositPlayer(player.getName(), amount);
             }
         }
         return true;

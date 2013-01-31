@@ -94,7 +94,7 @@ public class CaptureThePortal extends JavaPlugin {
         initAllowedHooks();
 
         Vault vault = new Vault();
-        if(Vault.vaultFound)
+        if(Vault.isVaultFound())
             vault.setupEconomy();
 
         int groupplugins = 0;
@@ -402,7 +402,7 @@ public class CaptureThePortal extends JavaPlugin {
                     + getMessage("reward_message")
                         .replace("[team]", getColoredTeamName(player) +ChatColor.GREEN)
                         .replace("[group]", getGroupType())
-                        .replace("[reward]", Vault.economy.format(rewardaftercooldown)));
+                        .replace("[reward]", Vault.getEconomy().format(rewardaftercooldown)));
         }
 
     }

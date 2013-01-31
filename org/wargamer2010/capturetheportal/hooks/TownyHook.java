@@ -1,15 +1,11 @@
 package org.wargamer2010.capturetheportal.hooks;
 
-import com.palmergames.bukkit.towny.Towny;
-import com.palmergames.bukkit.towny.exceptions.TownyException;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.palmergames.bukkit.towny.utils.CombatUtil;
 import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import java.util.List;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
@@ -18,10 +14,9 @@ import org.wargamer2010.capturetheportal.CaptureThePortal;
 import org.wargamer2010.capturetheportal.Utils.Vault;
 
 public class TownyHook implements Hook {
-    private Towny instance = null;
 
     public void setPlugin(Plugin pl) {
-        instance = (Towny)pl;
+
     }
 
     public String getName() {
@@ -52,44 +47,42 @@ public class TownyHook implements Hook {
     }
 
     public String getGroupByPlayer(Player player) {
-        Resident res = instance.getTownyUniverse().getResidentMap().get(player.getName());
-
         try {
+            Resident res = TownyUniverse.getDataSource().getResident(player.getName());
             Town town = res.getTown();
-            if(town == null)
-                return "";
             if(!CaptureThePortal.getUseNations()) {
                 return town.getName();
             } else {
-                return (town.getNation() == null ? "" : town.getNation().getName());
+                return town.getNation().getName();
             }
         } catch(NotRegisteredException ex) {
+            // Logging this exception might be worth something to SA's but it will probably
+            // spam console too much so let's assume this behavior is expected and return an empty string
             return "";
         }
     }
 
     public Boolean giveMoneyToPlayers(String group, World world, double amount) {
-        if(!Vault.vaultFound || Vault.economy == null)
+        if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
 
         List<Resident> residents;
         if(CaptureThePortal.getUseNations()) {
-            Nation nation = instance.getTownyUniverse().getNationsMap().get(group);
-            if(nation == null)
+            try {
+                residents = TownyUniverse.getDataSource().getNation(group).getResidents();
+            } catch(NotRegisteredException ex) {
                 return false;
-
-            residents = nation.getResidents();
-        } else {
-            Town town = instance.getTownyUniverse().getTownsMap().get(group);
-            if(town == null)
-                return false;
-
-            residents = town.getResidents();
-        }
-        if(residents != null) {
-            for(Resident player : residents) {
-                Vault.economy.depositPlayer(player.getName(), amount);
             }
+        } else {
+            try {
+                residents = TownyUniverse.getDataSource().getTown(group).getResidents();
+            } catch(NotRegisteredException ex) {
+                return false;
+            }
+        }
+
+        for(Resident player : residents) {
+            Vault.getEconomy().depositPlayer(player.getName(), amount);
         }
 
         return true;
