@@ -95,15 +95,24 @@ public class CaptureThePortalListener implements Listener {
     public void onPlayerPortal(final PlayerPortalEvent event) {
         if(event.isCancelled())
             return;
+
         Player player = event.getPlayer();
         Location from = event.getFrom();
+        Location to = event.getTo();
+        if(player == null || from == null || to == null)
+            return;
+        if(to.getWorld().getEnvironment() != Environment.NETHER && to.getWorld().getEnvironment() != Environment.THE_END)
+            return;
+
         int isAllowed = capture.isAllowedToPortal(from.getBlock(), player, from.getBlock().getType());
         if(isAllowed != 0) {
             Util.sendNotAllowedMessage(player, isAllowed);
             event.setCancelled(true);
-        } else if(event.getPlayer() != null && event.getFrom() != null && event.getTo() != null) {
-            if(event.getTo().getWorld().getEnvironment() != Environment.NETHER && event.getTo().getWorld().getEnvironment() != Environment.THE_END)
+        } else {
+            // Don't kick out player when ender support is off and we're porting to The End
+            if(!CaptureThePortal.getEnderSupport() && to.getWorld().getEnvironment() == Environment.THE_END)
                 return;
+
             // Admins shouldn't force a respawn
             if(capture.getTeamOfPlayer(player).isEmpty())
                 return;
