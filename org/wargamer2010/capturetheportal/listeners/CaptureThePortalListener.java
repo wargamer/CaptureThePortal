@@ -112,6 +112,9 @@ public class CaptureThePortalListener implements Listener {
             // Don't kick out player when ender support is off and we're porting to The End
             if(!CaptureThePortal.getEnderSupport() && to.getWorld().getEnvironment() == Environment.THE_END)
                 return;
+            // Same goes for the Nether
+            if(!CaptureThePortal.getNetherSupport() && to.getWorld().getEnvironment() == Environment.NETHER)
+                return;
 
             // Admins shouldn't force a respawn
             if(capture.getTeamOfPlayer(player).isEmpty())

@@ -46,6 +46,7 @@ public class CaptureThePortal extends JavaPlugin {
     private boolean enablestargates = false;                                                    // Whether or not Stargates should be supported together with regular nether portals
     private boolean enablefactions = false;                                                     // Enables factions and disables default way of creating teams (via Permissions)
     private static boolean enable_ender = false;                                                       // Support for Ender portals, is disabled by default
+    private static boolean enablenether = true;                                          // Support for Nether portals, enabled by default (of course)
     private boolean enabletowny = false;                                                        // Enables towny support
     private boolean enablesimpleclans = false;                                                  // Enables simpleclans support
     private boolean enablegods = false;                                                  // Enables gods support
@@ -254,6 +255,7 @@ public class CaptureThePortal extends JavaPlugin {
         enablesimpleclans = (config.getBoolean("CaptureThePortal.enablesimpleclanssupport", enablesimpleclans));
         enablegods = (config.getBoolean("CaptureThePortal.enablegodssupport", enablegods));
         enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
+        enablenether = (config.getBoolean("CaptureThePortal.enablenethersupport", enablenether));
         enablemvportals = (config.getBoolean("CaptureThePortal.enableMVPortals", enablemvportals));
         allowneutraltoportal = (config.getBoolean("CaptureThePortal.allow_neutral_to_portal", allowneutraltoportal));
         rewardaftercooldown = (config.getDouble("CaptureThePortal.rewardaftercooldown", rewardaftercooldown));
@@ -337,7 +339,7 @@ public class CaptureThePortal extends JavaPlugin {
             captureType = "Startgate";
         else if(enablemvportals && portalUtil.checkMultiversePortal(woolCenter, player.getWorld()))
             captureType = "Portal";
-        else if(checkSquare(woolCenter, player.getWorld()))
+        else if(enablenether && checkSquare(woolCenter, player.getWorld()))
             captureType = "Nether";
         if(!getTeamOfPlayer(player).isEmpty())
             if(!Storage.getCapture(block.getLocation()).equals(getTeamOfPlayer(player)))
@@ -435,7 +437,9 @@ public class CaptureThePortal extends JavaPlugin {
                 for(int y = -yradius; y <= yradius; y++) {
                     checkBlock = player.getWorld().getBlockAt((int)(player.getLocation().getX() + x), (int)(player.getLocation().getY() + y), (int)(player.getLocation().getZ() + z));
                     if(checkBlock.getType() == Material.STONE_PLATE) {
-
+                        if(validCapture(checkBlock, player).isEmpty())
+                            continue;
+                        
                         if(!allowneutraltoportal && getTeamOfPlayer(player).isEmpty())
                             return 1;
 
@@ -476,6 +480,10 @@ public class CaptureThePortal extends JavaPlugin {
 
     public static boolean getEnderSupport() {
         return enable_ender;
+    }
+
+    public static boolean getNetherSupport() {
+        return enablenether;
     }
 
     public static int getCooldownInterval() {

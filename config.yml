@@ -10,6 +10,7 @@ CaptureThePortal:
     usenations: false
     persistcapture: true
     allow_neutral_to_portal: false
+    enablenethersupport: true
     enableEndersupport: false
     enablewormholesupport: false
     enablestargatesupport: false
