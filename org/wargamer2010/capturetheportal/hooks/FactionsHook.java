@@ -60,7 +60,7 @@ public class FactionsHook implements Hook {
     public Boolean giveMoneyToPlayers(String group, World world, double amount) {
         if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
-        Faction fac = Factions.i.getBestIdMatch(group);
+        Faction fac = Factions.i.getByTag(group);
         if(fac == null)
             return false;
         else {

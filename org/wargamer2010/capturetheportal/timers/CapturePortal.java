@@ -77,6 +77,7 @@ public class CapturePortal extends Timer {
                 plugin.addTimer(button.getLocation(), this);
             } else {
                 plugin.addCaptureLocation(button, plugin.getTeamOfPlayer(capturer), 0);
+                plugin.updateControlledSigns(button, plugin.getTeamOfPlayer(capturer));
                 Block woolCenter = capturer.getWorld().getBlockAt(button.getX(), (button.getY()-1), button.getZ());
                 plugin.colorSquare(woolCenter, capturer.getWorld(), plugin.getColor(capturer));
                 Util.sendMessagePlayer(CaptureThePortal.getMessage("player_captured_it"), capturer);

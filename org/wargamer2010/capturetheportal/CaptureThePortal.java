@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.wargamer2010.capturetheportal.Utils.Vault;
 import org.wargamer2010.capturetheportal.Utils.portalUtil;
@@ -76,7 +77,8 @@ public class CaptureThePortal extends JavaPlugin {
                     for (Location key : Storage.getAllCaptures().keySet()) {
                         Block center = key.getWorld().getBlockAt(key);
                         Block woolCenter = key.getWorld().getBlockAt(center.getX(), (center.getY()-1), center.getZ());
-                        this.colorSquare(woolCenter, key.getWorld(), 0);
+                        colorSquare(woolCenter, key.getWorld(), 0);
+                        updateControlledSigns(woolCenter, "");
                     }
                 Storage.clear();
             }
@@ -409,6 +411,26 @@ public class CaptureThePortal extends JavaPlugin {
 
     }
 
+    public void updateControlledSigns(Block block, String group) {
+        int checkradius = 6;
+        World world = block.getWorld();
+
+        for(int x = -checkradius; x <= checkradius; x++) {
+            for(int z = -checkradius; z <= checkradius; z++) {
+                for(int y = -checkradius; y <= checkradius; y++) {
+                    Block temp = world.getBlockAt(block.getX()+x, block.getY()+y, block.getZ()+z);
+                    if(temp.getType() == Material.SIGN || temp.getType() == Material.WALL_SIGN || temp.getType() == Material.SIGN_POST) {
+                        Sign sign = (Sign) temp.getState();
+                        if(sign.getLine(0).equalsIgnoreCase("[Controlled by]")) {
+                            sign.setLine(1, group);
+                            sign.update();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void addTimer(Location loc, Timer tim) {
         if(Timers.containsKey(loc))
             Timers.remove(loc);
@@ -439,7 +461,7 @@ public class CaptureThePortal extends JavaPlugin {
                     if(checkBlock.getType() == Material.STONE_PLATE) {
                         if(validCapture(checkBlock, player).isEmpty())
                             continue;
-                        
+
                         if(!allowneutraltoportal && getTeamOfPlayer(player).isEmpty())
                             return 1;
 
