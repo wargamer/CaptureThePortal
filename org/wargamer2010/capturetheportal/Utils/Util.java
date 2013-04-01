@@ -159,9 +159,16 @@ public class Util {
     }
 
     public static void broadcastMessage(String message) {
-        if(message.isEmpty())
+        if(stringIsEmpty(message))
             return;
         Bukkit.getServer().broadcastMessage(message);
+    }
+
+    public static boolean stringIsEmpty(String test) {
+        if(test == null)
+            return true;
+        String stripped = ChatColor.stripColor(test);
+        return stripped.trim().isEmpty();
     }
 
     public static String convertLocationToString(Location loc) {

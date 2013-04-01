@@ -222,15 +222,20 @@ public class CaptureThePortal extends JavaPlugin {
 
     public void log(String message, Level lvl) {
         PluginDescriptionFile pdfFile = this.getDescription();
-        logger.log(lvl, ("["+pdfFile.getName()+" v"+pdfFile.getVersion()+"] " + message));
+        if(!Util.stringIsEmpty(message))
+            logger.log(lvl, ("["+pdfFile.getName()+" v"+pdfFile.getVersion()+"] " + message));
     }
 
     public static void Log(String message, Level lvl) {
-        logger.log(lvl, ("["+pluginName+"] " + message));
+        if(!Util.stringIsEmpty(message))
+            logger.log(lvl, ("["+pluginName+"] " + message));
     }
 
     public static String getMessage(String message) {
-        return (ChatColor.DARK_AQUA + "[CTP]: " + ChatColor.WHITE + CaptureThePortal.instance.getConfig().getString(("CaptureThePortal.messages." + message), message));
+        String result = CaptureThePortal.instance.getConfig().getString(("CaptureThePortal.messages." + message));
+        if(!Util.stringIsEmpty(result))
+            return (ChatColor.DARK_AQUA + "[CTP]: " + ChatColor.WHITE + result);
+        return "";
     }
 
     private void initConfig() {

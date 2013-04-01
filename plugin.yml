@@ -1,6 +1,6 @@
 name: CaptureThePortal
 main: org.wargamer2010.capturetheportal.CaptureThePortal
-version: 2.1.3
+version: 2.1.4Dev
 dev-url: http://dev.bukkit.org/server-mods/capturetheportal
 author: Wargamer2010
 softdepend: [Vault, Multiverse-Core, PermissionsEx, SimpleClans, Towny, Gods, Factions]
