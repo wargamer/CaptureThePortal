@@ -51,7 +51,7 @@ public class FactionsHook implements Hook {
         FPlayer FP = FPlayers.i.get(player);
         Faction Fac = FP.getFaction();
 
-        if(Fac == null || FP.getFactionId().equals("0"))
+        if(Fac == null || FP.getFactionId().equals("0") || Fac.getHome() == null)
             return "";
         else
             return Fac.getTag();

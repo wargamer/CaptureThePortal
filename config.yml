@@ -7,6 +7,7 @@ CaptureThePortal:
     cooldown_message_timeleft: 20
     cooldown_message_timeleft_increments: 0
     fullgroupnames: false
+    enablekickfromworld: true
     usenations: false
     persistcapture: true
     allow_neutral_to_portal: false

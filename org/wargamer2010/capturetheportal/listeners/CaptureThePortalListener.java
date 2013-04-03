@@ -109,6 +109,9 @@ public class CaptureThePortalListener implements Listener {
             Util.sendNotAllowedMessage(player, isAllowed);
             event.setCancelled(true);
         } else {
+            if(!CaptureThePortal.getEnableKickFromWorld())
+                return; // feature disabled
+
             // Don't kick out player when ender support is off and we're porting to The End
             if(!CaptureThePortal.getEnderSupport() && to.getWorld().getEnvironment() == Environment.THE_END)
                 return;

@@ -41,6 +41,7 @@ public class CaptureThePortal extends JavaPlugin {
     private double rewardaftercooldown = 0;                                                     // Amount of money all members of a group should get after the cooldown is over
     private boolean persistcapture = true;                                                      // Whether or not to store and load captured points
     private static boolean dieorbounce = false;                                                        // Whether the player that attempts to use an uncaptured portal dies (true) or bounces off (false)
+    private static boolean enablekickfromworld = true;                                          // Whether players from team A get kicked when a player from team B captures and portals
     private static boolean enablebouncing = true;                                               // Whether or not to bounce people from the Nether portal
     private static boolean enablewormholes = false;                                                    // Whether or not Wormholes should be supported together with regular nether portals
     private boolean enablemvportals = false;                                                    // Whether or not MVPortals should be supported together with regular nether portals
@@ -250,6 +251,7 @@ public class CaptureThePortal extends JavaPlugin {
         cooldown_message_timeleft = Util.getTimeFromString(config.getString("CaptureThePortal.cooldown_message_timeleft", ""), cooldown_message_timeleft);
         cooldown_message_timeleft_increments = Util.getTimeFromString(config.getString("CaptureThePortal.cooldown_message_timeleft_increments", ""), cooldown_message_timeleft_increments);
         fullgroupnames = (config.getBoolean("CaptureThePortal.fullgroupnames", fullgroupnames));
+        enablekickfromworld = (config.getBoolean("CaptureThePortal.enablekickfromworld", enablekickfromworld));
         usenations = (config.getBoolean("CaptureThePortal.usenations", usenations));
         dieorbounce = (config.getBoolean("CaptureThePortal.dieorbounce", dieorbounce));
         enablebouncing = (config.getBoolean("CaptureThePortal.enablebouncing", enablebouncing));
@@ -336,6 +338,10 @@ public class CaptureThePortal extends JavaPlugin {
     }
 
     private String validCapture(Block block, Player player) {
+        return validCapture(block, player, false);
+    }
+
+    private String validCapture(Block block, Player player, boolean ignoreTeam) {
         String captureType = "";
         Block woolCenter = player.getWorld().getBlockAt(block.getX(), (block.getY()-1), block.getZ());
         if(enable_ender && portalUtil.checkEndPortal(woolCenter, player.getWorld()))
@@ -348,9 +354,10 @@ public class CaptureThePortal extends JavaPlugin {
             captureType = "Portal";
         else if(enablenether && checkSquare(woolCenter, player.getWorld()))
             captureType = "Nether";
-        if(!getTeamOfPlayer(player).isEmpty())
-            if(!Storage.getCapture(block.getLocation()).equals(getTeamOfPlayer(player)))
-                return captureType;
+        if(ignoreTeam)
+            return captureType;
+        if(!(getTeamOfPlayer(player).isEmpty()) && !Storage.getCapture(block.getLocation()).equals(getTeamOfPlayer(player)))
+            return captureType;
         return "";
     }
 
@@ -464,7 +471,7 @@ public class CaptureThePortal extends JavaPlugin {
                 for(int y = -yradius; y <= yradius; y++) {
                     checkBlock = player.getWorld().getBlockAt((int)(player.getLocation().getX() + x), (int)(player.getLocation().getY() + y), (int)(player.getLocation().getZ() + z));
                     if(checkBlock.getType() == Material.STONE_PLATE) {
-                        if(validCapture(checkBlock, player).isEmpty())
+                        if(validCapture(checkBlock, player, true).isEmpty())
                             continue;
 
                         if(!allowneutraltoportal && getTeamOfPlayer(player).isEmpty())
@@ -527,6 +534,10 @@ public class CaptureThePortal extends JavaPlugin {
 
     public static Boolean getFullgroupnames() {
         return fullgroupnames;
+    }
+
+    public static Boolean getEnableKickFromWorld() {
+        return enablekickfromworld;
     }
 
     public static Boolean getUseNations() {
