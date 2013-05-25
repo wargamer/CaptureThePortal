@@ -20,6 +20,7 @@ CaptureThePortal:
     enablefactionsupport: false
     enabletownysupport: false
     enablesimpleclanssupport: false
+    enablesimpleclans2support: false
     enablegodssupport: false
     messages:
       capture_message: '[team] [group] is attempting to capture the [type].'

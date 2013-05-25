@@ -51,6 +51,7 @@ public class CaptureThePortal extends JavaPlugin {
     private static boolean enablenether = true;                                          // Support for Nether portals, enabled by default (of course)
     private boolean enabletowny = false;                                                        // Enables towny support
     private boolean enablesimpleclans = false;                                                  // Enables simpleclans support
+    private boolean enablesimpleclans2 = false;                                                  // Enables simpleclans 2 support
     private boolean enablegods = false;                                                  // Enables gods support
     private boolean enablepermissions = false;                                                  // Enables permissions support
     private boolean allowneutraltoportal = false;                                                  // Whether to allow Neutral players to use the portal
@@ -213,6 +214,7 @@ public class CaptureThePortal extends JavaPlugin {
         supportedHooks.put("Factions", enablefactions);
         supportedHooks.put("Towny", enabletowny);
         supportedHooks.put("SimpleClans", enablesimpleclans);
+        supportedHooks.put("SimpleClans2", enablesimpleclans2);
         supportedHooks.put("Gods", enablegods);
         supportedHooks.put("Vault", enablepermissions);
     }
@@ -262,6 +264,7 @@ public class CaptureThePortal extends JavaPlugin {
         enablepermissions = (config.getBoolean("CaptureThePortal.enablepermissionssupport", enablepermissions));
         enabletowny = (config.getBoolean("CaptureThePortal.enabletownysupport", enabletowny));
         enablesimpleclans = (config.getBoolean("CaptureThePortal.enablesimpleclanssupport", enablesimpleclans));
+        enablesimpleclans2 = (config.getBoolean("CaptureThePortal.enablesimpleclans2support", enablesimpleclans2));
         enablegods = (config.getBoolean("CaptureThePortal.enablegodssupport", enablegods));
         enable_ender = (config.getBoolean("CaptureThePortal.enableEndersupport", enable_ender));
         enablenether = (config.getBoolean("CaptureThePortal.enablenethersupport", enablenether));
