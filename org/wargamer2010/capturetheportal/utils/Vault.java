@@ -1,4 +1,4 @@
-package org.wargamer2010.capturetheportal.Utils;
+package org.wargamer2010.capturetheportal.utils;
 
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;

@@ -1,6 +1,6 @@
 package org.wargamer2010.capturetheportal;
 
-import org.wargamer2010.capturetheportal.Utils.configUtil;
+import org.wargamer2010.capturetheportal.utils.configUtil;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.io.IOException;
 import org.bukkit.Bukkit;
-import org.wargamer2010.capturetheportal.Utils.Util;
+import org.wargamer2010.capturetheportal.utils.Util;
 
 public class CapturesStorage {
     private static Map<Location, CaptureInformation> CapturedPoints = new HashMap<Location, CaptureInformation>();

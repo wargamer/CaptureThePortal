@@ -1,6 +1,6 @@
 package org.wargamer2010.capturetheportal.timers;
 
-import org.wargamer2010.capturetheportal.Utils.Util;
+import org.wargamer2010.capturetheportal.utils.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.entity.Player;

@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
 
-public interface Hook {
+public interface IHook {
     public void setPlugin(Plugin pl);
 
     public String getName();

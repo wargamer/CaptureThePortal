@@ -1,6 +1,6 @@
 package org.wargamer2010.capturetheportal.listeners;
 
-import org.wargamer2010.capturetheportal.Utils.Util;
+import org.wargamer2010.capturetheportal.utils.Util;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 
 public class CaptureThePortalListener implements Listener {
     private CaptureThePortal capture;
@@ -27,9 +28,9 @@ public class CaptureThePortalListener implements Listener {
     private Material isPortalMaterial(Block checkthis) {
         if(checkthis.getType() == Material.PORTAL)
             return Material.PORTAL;
-        else if(CaptureThePortal.getEnderSupport() && checkthis.getType() == Material.ENDER_PORTAL)
+        else if(CaptureThePortalConfig.getEnderSupport() && checkthis.getType() == Material.ENDER_PORTAL)
             return Material.ENDER_PORTAL;
-        else if(CaptureThePortal.getWormholeSupport() && checkthis.getType() == Material.STATIONARY_WATER)
+        else if(CaptureThePortalConfig.getWormholeSupport() && checkthis.getType() == Material.STATIONARY_WATER)
             return Material.STATIONARY_WATER;
         return null;
     }
@@ -109,14 +110,14 @@ public class CaptureThePortalListener implements Listener {
             Util.sendNotAllowedMessage(player, isAllowed);
             event.setCancelled(true);
         } else {
-            if(!CaptureThePortal.getEnableKickFromWorld())
+            if(!CaptureThePortalConfig.getEnableKickFromWorld())
                 return; // feature disabled
 
             // Don't kick out player when ender support is off and we're porting to The End
-            if(!CaptureThePortal.getEnderSupport() && to.getWorld().getEnvironment() == Environment.THE_END)
+            if(!CaptureThePortalConfig.getEnderSupport() && to.getWorld().getEnvironment() == Environment.THE_END)
                 return;
             // Same goes for the Nether
-            if(!CaptureThePortal.getNetherSupport() && to.getWorld().getEnvironment() == Environment.NETHER)
+            if(!CaptureThePortalConfig.getNetherSupport() && to.getWorld().getEnvironment() == Environment.NETHER)
                 return;
 
             // Admins shouldn't force a respawn

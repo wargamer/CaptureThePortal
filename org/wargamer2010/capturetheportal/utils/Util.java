@@ -1,8 +1,10 @@
-package org.wargamer2010.capturetheportal.Utils;
+package org.wargamer2010.capturetheportal.utils;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockFace;
@@ -12,8 +14,10 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 
 public class Util {
     private static Map<Player, Timestamp> lastSent = new LinkedHashMap<Player, Timestamp>();
@@ -208,7 +212,7 @@ public class Util {
 
     public static void sendNotAllowedMessage(Player player, int mode) {
         if(mode == 2 || mode == 3) {
-            if(!CaptureThePortal.getDieFromUncapturedPortal())
+            if(!CaptureThePortalConfig.getDieFromUncapturedPortal())
                 Util.sendMessagePlayer(CaptureThePortal.getMessage("player_not_allowed_to_use"), player);
             else
                 Util.sendMessagePlayer(CaptureThePortal.getMessage("player_not_allowed_die_use"), player);
@@ -218,7 +222,7 @@ public class Util {
     }
 
     public static void bouncePlayer(int mode, Player player, Location loc, Vector velocity) {
-        if(!CaptureThePortal.getEnablebouncing())
+        if(!CaptureThePortalConfig.getEnablebouncing())
             return;
         int delta = 1;
 
@@ -227,7 +231,7 @@ public class Util {
 
         sendNotAllowedMessage(player, mode);
         if(mode == 2 || mode == 3) {
-            if(CaptureThePortal.getDieFromUncapturedPortal()) {
+            if(CaptureThePortalConfig.getDieFromUncapturedPortal()) {
                 player.damage(1000);
                 delta = 3;
             }
@@ -249,12 +253,42 @@ public class Util {
         player.teleport(loc);
     }
 
+    public static boolean checkSquare(Block block, World world, int squareSize) {
+        boolean isWoolSquare = true;
+
+        for(int x = -((squareSize-1)/2); x <= ((squareSize-1)/2); x++) {
+            for(int z = -((squareSize-1)/2); z <= ((squareSize-1)/2); z++) {
+                if(world.getBlockAt(block.getX() + x, block.getY(), block.getZ() + z).getType() != Material.WOOL)
+                    isWoolSquare = false;
+            }
+        }
+
+        return isWoolSquare;
+    }
+
     public static String locToPrintableString(Location loc) {
         return ("(" + loc.getX() + ", " + loc.getY() + ", " + loc.getZ() + ")");
     }
 
     public static Integer getTicksFromSeconds(Integer seconds) {
         return (seconds * 20);
+    }
+
+    public static Plugin getPlugin(String name) {
+       return Bukkit.getServer().getPluginManager().getPlugin(name);
+    }
+
+    public static boolean isPluginEnabled(String name) {
+        return (getPlugin(name) != null);
+    }
+
+    public static List<BlockFace> getHorizontalBlockFaces() {
+        List<BlockFace> faces = new LinkedList<BlockFace>();
+        faces.add(BlockFace.NORTH);
+        faces.add(BlockFace.EAST);
+        faces.add(BlockFace.SOUTH);
+        faces.add(BlockFace.WEST);
+        return faces;
     }
 
     private static class timeUnit {

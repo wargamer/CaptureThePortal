@@ -15,6 +15,7 @@ CaptureThePortal:
     enableEndersupport: false
     enablewormholesupport: false
     enablestargatesupport: false
+    enablecreativegatessupport: false
     enableMVPortals: false
     enablepermissionssupport: true
     enablefactionsupport: false

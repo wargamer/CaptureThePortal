@@ -1,11 +1,12 @@
 package org.wargamer2010.capturetheportal.timers;
 
-import org.wargamer2010.capturetheportal.Utils.Util;
+import org.wargamer2010.capturetheportal.utils.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.block.Block;
 import org.bukkit.ChatColor;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 
 public class PortalCooldown extends Timer {
     private CaptureThePortal plugin;
@@ -41,10 +42,12 @@ public class PortalCooldown extends Timer {
         cooldown_left -= 1;
         decremented += 1;
         if(cooldown_left != 0) {
-            if(cooldown_left == CaptureThePortal.getCoolMessageTime())
-                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left)+ChatColor.GREEN)));
-            else if(decremented == CaptureThePortal.getCooldownInterval()) {
-                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message").replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left)+ChatColor.GREEN)));
+            if(cooldown_left == CaptureThePortalConfig.getCoolMessageTime())
+                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message")
+                        .replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left)+ChatColor.GREEN)));
+            else if(decremented == CaptureThePortalConfig.getCooldownInterval()) {
+                Util.broadcastMessage(ChatColor.GREEN+CaptureThePortal.getMessage("cooldown_message")
+                        .replace("[cooldown]", (ChatColor.BLUE+Util.parseTime(cooldown_left)+ChatColor.GREEN)));
                 decremented = 0;
             }
             plugin.addTimer(button.getLocation(), this);

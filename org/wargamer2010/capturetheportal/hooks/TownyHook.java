@@ -10,10 +10,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
-import org.wargamer2010.capturetheportal.CaptureThePortal;
-import org.wargamer2010.capturetheportal.Utils.Vault;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
+import org.wargamer2010.capturetheportal.utils.Vault;
 
-public class TownyHook implements Hook {
+public class TownyHook implements IHook {
 
     public void setPlugin(Plugin pl) {
 
@@ -24,7 +24,7 @@ public class TownyHook implements Hook {
     }
 
     public String getGroupType() {
-        if(!CaptureThePortal.getUseNations())
+        if(!CaptureThePortalConfig.getUseNations())
             return "Town";
         else
             return "Nation";
@@ -35,7 +35,7 @@ public class TownyHook implements Hook {
     }
 
     public Boolean isAllied(Player CapturingPlayer, String tag) {
-        if(!CaptureThePortal.getUseNations()) {
+        if(!CaptureThePortalConfig.getUseNations()) {
             String townName = getGroupByPlayer(CapturingPlayer);
             if(townName.isEmpty())
                 return false;
@@ -50,7 +50,7 @@ public class TownyHook implements Hook {
         try {
             Resident res = TownyUniverse.getDataSource().getResident(player.getName());
             Town town = res.getTown();
-            if(!CaptureThePortal.getUseNations()) {
+            if(!CaptureThePortalConfig.getUseNations()) {
                 return town.getName();
             } else {
                 return town.getNation().getName();
@@ -67,7 +67,7 @@ public class TownyHook implements Hook {
             return false;
 
         List<Resident> residents;
-        if(CaptureThePortal.getUseNations()) {
+        if(CaptureThePortalConfig.getUseNations()) {
             try {
                 residents = TownyUniverse.getDataSource().getNation(group).getResidents();
             } catch(NotRegisteredException ex) {

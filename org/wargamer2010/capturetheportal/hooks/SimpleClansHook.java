@@ -7,11 +7,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
-import org.wargamer2010.capturetheportal.CaptureThePortal;
-import org.wargamer2010.capturetheportal.Utils.Util;
-import org.wargamer2010.capturetheportal.Utils.Vault;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
+import org.wargamer2010.capturetheportal.utils.Util;
+import org.wargamer2010.capturetheportal.utils.Vault;
 
-public class SimpleClansHook implements Hook {
+public class SimpleClansHook implements IHook {
     private SimpleClans instance = null;
 
     public void setPlugin(Plugin pl) {
@@ -52,7 +52,7 @@ public class SimpleClansHook implements Hook {
         Clan CP = instance.getClanManager().getClanByPlayerName(player.getName());
         if(CP == null)
             return "";
-        if(!CaptureThePortal.getFullgroupnames())
+        if(!CaptureThePortalConfig.getFullgroupnames())
             return CP.getTagLabel();
         else
             return CP.getName();
@@ -63,7 +63,7 @@ public class SimpleClansHook implements Hook {
             return false;
 
         Clan CP = null;
-        if(!CaptureThePortal.getFullgroupnames()) {
+        if(!CaptureThePortalConfig.getFullgroupnames()) {
             CP = instance.getClanManager().getClan(group);
         } else {
             for(Clan clan : instance.getClanManager().getClans()) {

@@ -5,9 +5,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.ChatColor;
 import com.dogonfire.gods.Gods;
 import org.bukkit.World;
-import org.wargamer2010.capturetheportal.Utils.Vault;
+import org.wargamer2010.capturetheportal.utils.Vault;
 
-public class GodsHook implements Hook {
+public class GodsHook implements IHook {
     private Gods instance = null;
 
     public void setPlugin(Plugin pl) {
@@ -40,7 +40,7 @@ public class GodsHook implements Hook {
         if(!Vault.isVaultFound() || Vault.getEconomy() == null)
             return false;
 
-        if(!instance.getGodManager().getGods().contains(group))
+        if(!instance.getGodManager().godExist(group))
             return false;
         for(String player : instance.getBelieverManager().getBelieversForGod(group)) {
             Vault.getEconomy().depositPlayer(player, amount);

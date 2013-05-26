@@ -1,4 +1,4 @@
-package org.wargamer2010.capturetheportal.Utils;
+package org.wargamer2010.capturetheportal.utils;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.MemorySection;

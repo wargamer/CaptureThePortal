@@ -6,11 +6,12 @@ import org.bukkit.ChatColor;
 import java.util.Map;
 import java.util.logging.Level;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
-import org.wargamer2010.capturetheportal.Utils.Vault;
+import org.wargamer2010.capturetheportal.utils.Vault;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.World;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 
-public class VaultHook implements Hook {
+public class VaultHook implements IHook {
     private Permission instance = null;
     private String neutralPermission = "CaptureThePortal.neutral"; // The permissions that can be assigned to a group/player that is not allowed to participate
 
@@ -35,7 +36,7 @@ public class VaultHook implements Hook {
 
     public ChatColor getGroupColor(Player player) {
         String shortName = getGroupByPlayer(player, true).replace("CaptureThePortal.", "");
-        if(CaptureThePortal.getColors().containsKey(shortName))
+        if(CaptureThePortalConfig.getColors().containsKey(shortName))
             return ChatColor.valueOf(shortName.toUpperCase());
         else
             return null;
@@ -55,7 +56,7 @@ public class VaultHook implements Hook {
 
         int amount = 0;
         String returnPerm = "";
-        for(Map.Entry<String, Integer> color : CaptureThePortal.getColors().entrySet()) {
+        for(Map.Entry<String, Integer> color : CaptureThePortalConfig.getColors().entrySet()) {
             if(hasRights(player, ("CaptureThePortal." + color.getKey()))) {
                 returnPerm = color.getKey();
                 amount++;

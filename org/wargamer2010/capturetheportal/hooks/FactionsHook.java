@@ -4,14 +4,14 @@ import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.FPlayers;
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.Factions;
-import com.massivecraft.factions.struct.Relation;
+import com.massivecraft.factions.struct.Rel;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.plugin.Plugin;
-import org.wargamer2010.capturetheportal.Utils.Vault;
+import org.wargamer2010.capturetheportal.utils.Vault;
 
-public class FactionsHook implements Hook {
+public class FactionsHook implements IHook {
     public void setPlugin(Plugin pl) {
 
     }
@@ -36,12 +36,12 @@ public class FactionsHook implements Hook {
         Faction captured_faction = Factions.i.getByTag(tag);
         if(captured_faction == null)
             return false;
-        Relation rel;
-        if(capturing_faction.getRelationWish(captured_faction).value >= captured_faction.getRelationWish(capturing_faction).value)
+        Rel rel;
+        if(capturing_faction.getRelationWish(captured_faction).isAtLeast(captured_faction.getRelationWish(capturing_faction)))
             rel = captured_faction.getRelationWish(capturing_faction);
         else
             rel = capturing_faction.getRelationWish(captured_faction);
-        if(rel == Relation.ALLY)
+        if(rel == Rel.ALLY)
             return true;
         else
             return false;
