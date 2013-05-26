@@ -86,18 +86,6 @@ public class CaptureThePortalConfig {
         return dieorbounce;
     }
 
-    public static boolean getWormholeSupport() {
-        return enablewormholes;
-    }
-
-    public static boolean getEnderSupport() {
-        return enableEnder;
-    }
-
-    public static boolean getNetherSupport() {
-        return enablenether;
-    }
-
     public static int getCooldownInterval() {
         return cooldown_message_timeleft_increments;
     }
@@ -133,6 +121,34 @@ public class CaptureThePortalConfig {
     public static boolean getPersistCapture() {
         return persistcapture;
     }
+
+    // Portal support
+
+    public static boolean getWormholeSupport() {
+        return enablewormholes;
+    }
+
+    public static boolean getEnderSupport() {
+        return enableEnder;
+    }
+
+    public static boolean getNetherSupport() {
+        return enablenether;
+    }
+
+    public static boolean getStargatesSupport() {
+        return enablestargates;
+    }
+
+    public static boolean getCreativeGatesSupport() {
+        return enablecreativegates;
+    }
+
+    public static boolean getMVPSupport() {
+        return enablemvportals;
+    }
+
+    // Portal support
 
     public static Map<String, Boolean> getSupportedHooks() {
         return Collections.unmodifiableMap(supportedHooks);

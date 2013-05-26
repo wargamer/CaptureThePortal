@@ -5,12 +5,12 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.plugin.Plugin;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 import org.wargamer2010.capturetheportal.utils.Util;
 
 public class WormholePortal implements IPortal {
     public boolean init() {
-        return Util.isPluginEnabled("WormholeXTreme");
+        return (CaptureThePortalConfig.getWormholeSupport() && Util.isPluginEnabled("WormholeXTreme"));
     }
 
     public String getName() {

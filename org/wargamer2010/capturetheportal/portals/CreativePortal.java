@@ -14,9 +14,12 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 
 public class CreativePortal implements IPortal, Listener {
     public boolean init() {
+        if(!CaptureThePortalConfig.getCreativeGatesSupport())
+            return false;
         if(Util.isPluginEnabled("CreativeGates"))
             Bukkit.getServer().getPluginManager().registerEvents(this, CaptureThePortal.get());
         return Util.isPluginEnabled("CreativeGates");

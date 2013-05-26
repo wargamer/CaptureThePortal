@@ -1,7 +1,6 @@
 
 package org.wargamer2010.capturetheportal.portals;
 
-import java.util.ArrayList;
 import java.util.List;
 import net.TheDgtl.Stargate.event.StargateAccessEvent;
 import net.TheDgtl.Stargate.event.StargatePortalEvent;
@@ -14,12 +13,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 import org.wargamer2010.capturetheportal.utils.Util;
 
 public class StargatePortal implements IPortal, Listener {
     public boolean init() {
+        if(!CaptureThePortalConfig.getStargatesSupport())
+            return false;
         if(Util.isPluginEnabled("Stargate"))
             Bukkit.getServer().getPluginManager().registerEvents(this, CaptureThePortal.get());
         return Util.isPluginEnabled("Stargate");

@@ -16,12 +16,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.wargamer2010.capturetheportal.CaptureThePortal;
+import org.wargamer2010.capturetheportal.CaptureThePortalConfig;
 import org.wargamer2010.capturetheportal.utils.Util;
 
 public class MultiversePortal implements IPortal, Listener {
     private MultiversePortals plugin;
 
     public boolean init() {
+        if(!CaptureThePortalConfig.getMVPSupport())
+            return false;
         Plugin temp = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Portals");
         if(temp == null)
             return false;
